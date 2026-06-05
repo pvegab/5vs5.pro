@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Trophy, Compass, Flag } from 'lucide-react';
+import { Award, Trophy } from 'lucide-react';
 
 interface LeaderboardEntry {
   name: string;
@@ -24,6 +24,8 @@ interface LeaderboardProps {
   lang?: 'es' | 'en';
 }
 
+const API_URL = 'https://api.5vs5.pro/api/leaderboard';
+
 const COUNTRIES = [
   { code: 'ES', nameEs: 'España', nameEn: 'Spain', flag: '🇪🇸' },
   { code: 'KR', nameEs: 'Corea del Sur', nameEn: 'South Korea', flag: '🇰🇷' },
@@ -44,14 +46,6 @@ const COUNTRIES = [
   { code: 'CL', nameEs: 'Chile', nameEn: 'Chile', flag: '🇨🇱' }
 ].sort((a, b) => a.nameEs.localeCompare(b.nameEs));
 
-const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
-  { name: 'KkOma', countryCode: 'KR', flag: '🇰🇷', record: '6W-0L', kills: 142, deaths: 48, score: 9280, gameMode: 'lecHard', ovr: 91, date: '2026-05-18' },
-  { name: 'Dylan Falco', countryCode: 'CA', flag: '🇨🇦', record: '5W-1L', kills: 118, deaths: 54, score: 7120, gameMode: 'lecHard', ovr: 88, date: '2026-05-20' },
-  { name: 'YamatoCannon', countryCode: 'SE', flag: '🇸🇪', record: '5W-1L', kills: 110, deaths: 62, score: 6250, gameMode: 'normal', ovr: 86, date: '2026-05-22' },
-  { name: 'Melzhet', countryCode: 'ES', flag: '🇪🇸', record: '4W-1L', kills: 92, deaths: 55, score: 5540, gameMode: 'lecHard', ovr: 85, date: '2026-05-25' },
-  { name: 'Peter Dun', countryCode: 'GB', flag: '🇬🇧', record: '3W-1L', kills: 68, deaths: 42, score: 4120, gameMode: 'normal', ovr: 81, date: '2026-05-28' }
-];
-
 export default function Leaderboard({
   winsCount,
   lossesCount,
@@ -65,31 +59,41 @@ export default function Leaderboard({
   const [coachName, setCoachName] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [submitError, setSubmitError] = useState('');
 
-  // Calculate dynamic run score
-  // Formula: wins*1000 + kills*25 - deaths*15 + OVR*10. Hard mode gets 1.5x scaling
   const baselineScore = (winsCount * 1200) + (totalKills * 25) - (totalDeaths * 15) + (teamOvr * 10);
   const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'lecHard' ? 1.5 : 1.0)));
-
   const recordString = `${winsCount}W-${lossesCount}L`;
 
-  useEffect(() => {
-    const raw = localStorage.getItem('lol_coach_draft_leaderboard_v1');
-    if (raw) {
-      try {
-        setEntries(JSON.parse(raw));
-      } catch (e) {
-        setEntries(DEFAULT_LEADERBOARD);
+  const loadLeaderboard = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error('No se pudo cargar el ranking');
       }
-    } else {
-      localStorage.setItem('lol_coach_draft_leaderboard_v1', JSON.stringify(DEFAULT_LEADERBOARD));
-      setEntries(DEFAULT_LEADERBOARD);
+
+      const data = await response.json();
+      setEntries(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setEntries([]);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadLeaderboard();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!coachName.trim()) return;
+
+    setSubmitError('');
 
     const newEntry: LeaderboardEntry = {
       name: coachName.trim(),
@@ -104,10 +108,30 @@ export default function Leaderboard({
       date: new Date().toISOString().split('T')[0],
     };
 
-    const updated = [...entries, newEntry].sort((a, b) => b.score - a.score);
-    localStorage.setItem('lol_coach_draft_leaderboard_v1', JSON.stringify(updated));
-    setEntries(updated);
-    setHasSubmitted(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEntry),
+      });
+
+      if (!response.ok) {
+        throw new Error('No se pudo guardar el resultado');
+      }
+
+      setHasSubmitted(true);
+      setCoachName('');
+      await loadLeaderboard();
+    } catch (error) {
+      console.error(error);
+      setSubmitError(
+        lang === 'es'
+          ? 'No se pudo guardar el resultado. Inténtalo de nuevo.'
+          : 'Could not save the result. Please try again.'
+      );
+    }
   };
 
   const isEs = lang === 'es';
@@ -118,7 +142,7 @@ export default function Leaderboard({
         <div>
           <h3 className="font-display font-black text-lg md:text-xl text-[#f0e6d2] uppercase tracking-wide flex items-center gap-2">
             <Trophy className="w-5 h-5 text-[#c8aa6e] animate-pulse" />
-            <span>{isEs ? 'RANKING ESUPERMUNDIAL' : 'GLOBAL COACH LEADERBOARD'}</span>
+            <span>{isEs ? 'RANKING MUNDIAL' : 'GLOBAL COACH LEADERBOARD'}</span>
           </h3>
           <p className="text-xs text-[#a09b8c] font-mono mt-1">
             {isEs ? 'COMPITE CON LOS ENTRENADORES MÁS ICONICOS DEL MUNDO' : 'COMPETE AGAINST THE MOST ICONIC COACHES'}
@@ -135,7 +159,6 @@ export default function Leaderboard({
         </div>
       </div>
 
-      {/* Submission Form (Only if they haven't submitted yet in this session) */}
       {!hasSubmitted ? (
         <form onSubmit={handleSubmit} className="bg-[#010a13] border border-[#c8aa6e]/15 p-4 rounded-xl space-y-4 shadow-inner">
           <h4 className="text-[11px] font-bold text-[#c8aa6e] uppercase tracking-widest flex items-center gap-1">
@@ -180,6 +203,12 @@ export default function Leaderboard({
             </div>
           </div>
 
+          {submitError && (
+            <p className="text-red-400 text-[10px] font-bold uppercase tracking-wider">
+              {submitError}
+            </p>
+          )}
+
           <button
             type="submit"
             className="w-full py-3.5 bg-gradient-to-r from-[#c8aa6e] to-[#785a28] text-[#010a13] hover:brightness-110 active:scale-[0.99] transition-all font-black text-xs uppercase tracking-widest rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-1.5 font-display"
@@ -200,7 +229,6 @@ export default function Leaderboard({
         </div>
       )}
 
-      {/* High contrast rankings leaderboard table */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-[#a09b8c] tracking-widest uppercase font-mono">
           {isEs ? 'MURO DE HONOR DE ENTRENADORES' : 'COACH HONORARY ROSTER'}
@@ -220,73 +248,81 @@ export default function Leaderboard({
                   <th className="py-3 px-4 text-right pr-5">{isEs ? 'PUNTAJE' : 'SCORE'}</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-[#c8aa6e]/5">
-                {entries.map((entry, index) => {
-                  const isTop3 = index < 3;
-                  const rowBg = index === 0 
-                    ? 'bg-[#c8aa6e]/5 hover:bg-[#c8aa6e]/10' 
-                    : index % 2 === 0 
-                      ? 'bg-[#010a13] hover:bg-[#091428]/35' 
-                      : 'bg-[#050c14] hover:bg-[#091428]/45';
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-[#a09b8c] text-[11px]">
+                      {isEs ? 'Cargando ranking global...' : 'Loading global leaderboard...'}
+                    </td>
+                  </tr>
+                ) : entries.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-[#a09b8c] text-[11px]">
+                      {isEs ? 'Todavía no hay resultados guardados.' : 'No saved results yet.'}
+                    </td>
+                  </tr>
+                ) : (
+                  entries.map((entry, index) => {
+                    const isTop3 = index < 3;
+                    const rowBg = index === 0
+                      ? 'bg-[#c8aa6e]/5 hover:bg-[#c8aa6e]/10'
+                      : index % 2 === 0
+                        ? 'bg-[#010a13] hover:bg-[#091428]/35'
+                        : 'bg-[#050c14] hover:bg-[#091428]/45';
 
-                  return (
-                    <tr key={index} className={`transition-all duration-155 text-[11px] ${rowBg}`}>
-                      {/* Rank column */}
-                      <td className="py-3 px-4 text-center font-bold">
-                        {isTop3 ? (
-                          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${
-                            index === 0 ? 'bg-amber-400 text-[#010a13] font-black shadow-md' :
-                            index === 1 ? 'bg-slate-300 text-[#010a13] font-black shadow-md' :
-                            'bg-amber-600 text-[#010a13] font-black shadow-md'
+                    return (
+                      <tr key={`${entry.name}-${entry.score}-${index}`} className={`transition-all duration-155 text-[11px] ${rowBg}`}>
+                        <td className="py-3 px-4 text-center font-bold">
+                          {isTop3 ? (
+                            <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${
+                              index === 0 ? 'bg-amber-400 text-[#010a13] font-black shadow-md' :
+                              index === 1 ? 'bg-slate-300 text-[#010a13] font-black shadow-md' :
+                              'bg-amber-600 text-[#010a13] font-black shadow-md'
+                            }`}>
+                              {index + 1}
+                            </span>
+                          ) : (
+                            <span className="text-[#a09b8c]">{index + 1}</span>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[150px] truncate">
+                          <span className="mr-2" title={entry.countryCode}>{entry.flag}</span>
+                          <span>{entry.name}</span>
+                        </td>
+
+                        <td className="py-3 px-4 text-center font-semibold text-[#c8aa6e] whitespace-nowrap">
+                          {entry.record}
+                        </td>
+
+                        <td className="py-3 px-4 text-center text-[#a09b8c]">
+                          <span className="text-blue-400 font-semibold">{entry.kills}</span>
+                          <span className="mx-1 text-[#a09b8c]/35">/</span>
+                          <span className="text-red-400 font-semibold">{entry.deaths}</span>
+                        </td>
+
+                        <td className="py-3 px-4 text-center font-black text-rose-350/80">
+                          {entry.ovr}
+                        </td>
+
+                        <td className="py-3 px-4 text-center text-[10px]">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                            entry.gameMode === 'lecHard'
+                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                              : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
                           }`}>
-                            {index + 1}
+                            {entry.gameMode === 'lecHard' ? (isEs ? 'DIFÍCIL' : 'HARD') : 'NORMAL'}
                           </span>
-                        ) : (
-                          <span className="text-[#a09b8c]">{index + 1}</span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Coach Name & Country Flag */}
-                      <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[150px] truncate">
-                        <span className="mr-2" title={entry.countryCode}>{entry.flag}</span>
-                        <span>{entry.name}</span>
-                      </td>
-
-                      {/* Record */}
-                      <td className="py-3 px-4 text-center font-semibold text-[#c8aa6e] whitespace-nowrap">
-                        {entry.record}
-                      </td>
-
-                      {/* K/D stats */}
-                      <td className="py-3 px-4 text-center text-[#a09b8c]">
-                        <span className="text-blue-400 font-semibold">{entry.kills}</span>
-                        <span className="mx-1 text-[#a09b8c]/35">/</span>
-                        <span className="text-red-400 font-semibold">{entry.deaths}</span>
-                      </td>
-
-                      {/* Team OVR */}
-                      <td className="py-3 px-4 text-center font-black text-rose-350/80">
-                        {entry.ovr}
-                      </td>
-
-                      {/* Difficulty settings */}
-                      <td className="py-3 px-4 text-center text-[10px]">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                          entry.gameMode === 'lecHard' 
-                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
-                            : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                        }`}>
-                          {entry.gameMode === 'lecHard' ? (isEs ? 'DIFÍCIL' : 'HARD') : 'NORMAL'}
-                        </span>
-                      </td>
-
-                      {/* Calculated Score */}
-                      <td className="py-3 px-4 text-right pr-5 font-black text-emerald-400 tracking-tight text-xs font-sans">
-                        {entry.score.toLocaleString()}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <td className="py-3 px-4 text-right pr-5 font-black text-emerald-400 tracking-tight text-xs font-sans">
+                          {entry.score.toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
