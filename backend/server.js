@@ -12,7 +12,7 @@ app.use(express.json());
 
 const db = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
-  port: process.env.DB_PORT || 3306,
+  port: Number(process.env.DB_PORT) || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -20,6 +20,34 @@ const db = mysql.createPool({
 
 app.get("/", (req, res) => {
   res.json({ message: "Backend funcionando correctamente" });
+});
+
+app.get("/api/db-test", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT DATABASE() AS database_name, NOW() AS server_time"
+    );
+
+    res.json({
+      success: true,
+      env: {
+        DB_HOST: process.env.DB_HOST,
+        DB_PORT: process.env.DB_PORT,
+        DB_USER: process.env.DB_USER,
+        DB_NAME: process.env.DB_NAME,
+        DB_PASSWORD_SET: !!process.env.DB_PASSWORD,
+      },
+      result: rows,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      sqlMessage: error.sqlMessage,
+    });
+  }
 });
 
 app.get("/api/leaderboard", async (req, res) => {
@@ -31,7 +59,13 @@ app.get("/api/leaderboard", async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error("Error leaderboard:", error);
-    res.status(500).json({ error: "Error al obtener el ranking" });
+
+    res.status(500).json({
+      error: "Error al obtener el ranking",
+      message: error.message,
+      code: error.code,
+      sqlMessage: error.sqlMessage,
+    });
   }
 });
 
@@ -78,7 +112,13 @@ app.post("/api/leaderboard", async (req, res) => {
     });
   } catch (error) {
     console.error("Error guardar resultado:", error);
-    res.status(500).json({ error: "Error al guardar el resultado" });
+
+    res.status(500).json({
+      error: "Error al guardar el resultado",
+      message: error.message,
+      code: error.code,
+      sqlMessage: error.sqlMessage,
+    });
   }
 });
 
