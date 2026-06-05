@@ -28,406 +28,645 @@ interface MatchSimulatorViewProps {
   lang?: Language;
 }
 
-// Compact Multilingual Live Commentary Engine
-// Provides contextual translations for match events
-const EVENT_TRANSLATIONS: Record<Language, {
-  s1: string[];
-  s2: string[];
-  s3: string[];
-  s4: string[];
-  s5: string[];
-  s6Win: string[];
-  s6Loss: string[];
-  s7Win: string[];
-  s7Loss: string[];
-}> = {
+// Multilingual live commentary engine with score-aware match flow.
+// The scoreboard is now driven by narrative patterns instead of linear proportional increments,
+// so matches can include comebacks, throws, back-and-forth fights, clean stomps and late-game flips.
+type CommentaryState =
+  | 'setup'
+  | 'playerLead'
+  | 'opponentLead'
+  | 'even'
+  | 'swingToPlayer'
+  | 'swingToOpponent'
+  | 'finalWin'
+  | 'finalLoss';
+
+type CommentarySet = Record<CommentaryState, string[]>;
+
+type KillSnapshot = {
+  kills: number;
+  deaths: number;
+};
+
+type FlowPattern = {
+  id: string;
+  killRatio: number[];
+  deathRatio: number[];
+};
+
+const MATCH_TIMELINE = ['01:20', '04:45', '09:30', '15:15', '21:40', '28:10', '34:00'];
+
+const WIN_PATTERNS: FlowPattern[] = [
+  {
+    id: 'cleanWin',
+    killRatio: [0.05, 0.18, 0.36, 0.54, 0.72, 0.88, 1],
+    deathRatio: [0.02, 0.10, 0.22, 0.36, 0.52, 0.68, 1],
+  },
+  {
+    id: 'comebackWin',
+    killRatio: [0.00, 0.08, 0.22, 0.38, 0.58, 0.78, 1],
+    deathRatio: [0.20, 0.45, 0.62, 0.70, 0.78, 0.88, 1],
+  },
+  {
+    id: 'backAndForthWin',
+    killRatio: [0.10, 0.20, 0.38, 0.45, 0.66, 0.76, 1],
+    deathRatio: [0.06, 0.30, 0.34, 0.56, 0.62, 0.82, 1],
+  },
+  {
+    id: 'lateFlipWin',
+    killRatio: [0.02, 0.12, 0.25, 0.40, 0.55, 0.80, 1],
+    deathRatio: [0.14, 0.30, 0.48, 0.58, 0.68, 0.78, 1],
+  },
+];
+
+const LOSS_PATTERNS: FlowPattern[] = [
+  {
+    id: 'slowLoss',
+    killRatio: [0.03, 0.12, 0.24, 0.38, 0.52, 0.72, 1],
+    deathRatio: [0.12, 0.28, 0.45, 0.62, 0.78, 0.90, 1],
+  },
+  {
+    id: 'throwLoss',
+    killRatio: [0.14, 0.34, 0.56, 0.72, 0.84, 0.92, 1],
+    deathRatio: [0.04, 0.14, 0.28, 0.46, 0.68, 0.86, 1],
+  },
+  {
+    id: 'backAndForthLoss',
+    killRatio: [0.10, 0.18, 0.42, 0.50, 0.72, 0.82, 1],
+    deathRatio: [0.06, 0.32, 0.38, 0.56, 0.66, 0.86, 1],
+  },
+  {
+    id: 'stompLoss',
+    killRatio: [0.00, 0.08, 0.18, 0.30, 0.46, 0.66, 1],
+    deathRatio: [0.16, 0.34, 0.52, 0.70, 0.84, 0.93, 1],
+  },
+];
+
+const LIVE_COMMENTARY: Record<Language, CommentarySet> = {
   es: {
-    s1: [
-      "¡Invasión agresiva al nivel 1! {dSup} toma la iniciativa con un destello para invadir la jungla.",
-      "Bajo la directriz estratégica del Coach {dCoach}, plantean una rotación impecable para defender.",
-      "{dJungle} coloca centinelas profundos rastreando la ruta inicial de {oJungle}."
+    setup: [
+      'La Grieta se abre con lectura de jungla: {dJungle} coloca visión profunda y {dCoach} pide paciencia antes del primer choque.',
+      'Inicio tenso. {dSup} flota por río, {dMid} guarda prioridad y {oppName} responde con defensa cerrada de sus campamentos.',
+      'Nivel 1 con mucho respeto: ambos equipos miden el tempo, pero {dTop} ya presiona la primera oleada para ganar prioridad lateral.',
+      'El plan inicial es claro: control de visión, líneas estables y esperar el primer error de {oppName}.',
     ],
-    s2: [
-      "¡PRIMERA SANGRE! {dJungle} saca provecho de {dJungleChamp} y embosca con éxito a {oMid}.",
-      "¡ASESINATO INDIVIDUAL! Con reflejos sobrehumanos, {dTop} castiga a {oTop} en línea.",
-      "¡Doble baja en carril inferior! {dAdc} y {dSup} sincronizan combos letales."
+    playerLead: [
+      'Tu equipo toma ventaja ({score}). {dJungle} castiga la ruta rival y convierte la presión de líneas en control de mapa.',
+      '{dMid} mueve primero desde medio y fuerza un pick limpio. El marcador favorece a tu roster: {score}.',
+      'Buen intercambio para tu equipo. {dAdc} juega con spacing perfecto y {dSup} protege la backline sin perder tempo.',
+      'La prioridad de líneas empieza a pesar. {dTop} gana presión lateral y obliga a {oppName} a contestar tarde.',
+      'La lectura macro de {dCoach} funciona: rotación rápida, visión en río y nuevo castigo sobre la jungla enemiga.',
     ],
-    s3: [
-      "Tu equipo asegura las Larvas del Vacío acelerando el empuje sobre las torres.",
-      "{dJungle} se hace con el control del Dragón del Océano sin contratiempos.",
-      "{dTop} teleporta para castigar una rotación imprudente de {oppName}."
+    opponentLead: [
+      '{oppName} golpea primero y pone el marcador en {score}. Tu equipo necesita limpiar visión antes del siguiente objetivo.',
+      'Mala ventana de tempo: {oJungle} encuentra el ángulo y castiga una rotación demasiado profunda.',
+      'La partida se complica. {oMid} gana prioridad en medio y {oppName} empieza a cerrar el mapa.',
+      'Tu botlane queda sin visión y {oppName} convierte el pick en presión sobre dragón. Marcador actual: {score}.',
+      'El rival está leyendo bien los resets. Toca calmar la partida y evitar otro shutdown innecesario.',
     ],
-    s4: [
-      "¡Guerra en el Heraldo de la Grieta! {dTop} desata control de masas decisivo.",
-      "{dMid} desata ráfagas devastadoras con {dMidChamp} barriendo al rival.",
-      "La botlane sella un atrapamiento providencial facilitando la caída de la torre enemiga."
+    even: [
+      'La partida está en el filo ({score}). Nadie consigue romper el mapa y el próximo objetivo puede decidir el tempo.',
+      'Intercambio caótico en río: ambos equipos pierden recursos, pero ninguno sale realmente limpio.',
+      'La ventaja cambia de manos en cada oleada. {dCoach} pide paciencia: no hace falta forzar sin visión.',
+      'Mucho baile alrededor del objetivo. La pelea está igualada y un solo engage puede partir la partida.',
     ],
-    s5: [
-      "Asedio intenso y baile visual alrededor de Barón Nashor liderado por {dCoach}.",
-      "¡Micro-mecánica estelar! El tirador {dAdc} esquiva limpiamente los misiles enemigos.",
-      "La presión paralela ejercida por {dTop} obliga a {oppName} a dividirse en desorden."
+    swingToPlayer: [
+      '¡Remontada en marcha! {dJungle} encuentra el smite, {dMid} llega antes y tu equipo gira el marcador: {score}.',
+      '¡Cambio de guion! {dSup} inicia con precisión, {dAdc} limpia la pelea y {oppName} pierde el control del río.',
+      'Tu equipo castiga el exceso de confianza rival. Shutdown clave y la partida vuelve a respirar.',
+      'Lectura brillante de {dCoach}: cebo sobre Nashor, colapso inmediato y la ventaja cambia de lado.',
     ],
-    s6Win: [
-      "¡ROBO LEGENDARIO! El jungla {dJungle} se desliza hacia el foso y asegura el Barón Nashor.",
-      "Cebo maestro en el dragón. {dAdc} activa combos aniquilando a la patrulla enemiga."
+    swingToOpponent: [
+      '¡Cuidado con el throw! Tu equipo se pasa de agresivo y {oppName} castiga el mal posicionamiento. Marcador: {score}.',
+      'El rival responde con una cazada en la niebla de guerra. {dAdc} cae antes de pegar y la pelea se desordena.',
+      'La ventaja se escapa por una mala entrada al río. {oMid} encuentra el flanco y rompe la formación.',
+      'Demasiado riesgo sin visión. {oppName} lee la jugada y convierte una defensa en contraataque.',
     ],
-    s6Loss: [
-      "¡Tragedia! El jungla rival {oJungle} asegura el Nashor desmantelando la zona.",
-      "Rodeados y diezmados en el foso del dragón. {oMid} asesta la estocada definitiva."
+    finalWin: [
+      '¡ACE definitivo! {dMid} encuentra el engage final, {dAdc} remata la pelea y tu equipo cierra la partida con {score}.',
+      '¡Victoria trabajada! Nashor, oleadas sincronizadas y ejecución limpia: {oppName} no aguanta el último asedio.',
+      'La llamada final de {dCoach} es perfecta. Tu equipo fuerza la pelea buena, gana el 5v5 y avanza de ronda.',
+      '¡GG! Después de una partida llena de swings, tu roster encuentra la pelea decisiva y destruye el nexo.',
     ],
-    s7Win: [
-      "¡SENSACIONAL EXTERMINIO! {dMid} con {dMidChamp} colapsa a cuatro rivales. ¡La gloria está cerca!",
-      "¡QUADRA KILL para {dAdc}! Recibiendo un peel celestial de {dSup}, borra de la grieta a {oppName}."
+    finalLoss: [
+      'Derrota dolorosa. {oppName} encuentra la pelea decisiva, rompe la backline y cierra el mapa con {score}.',
+      'La última pelea sale mal: sin visión en Nashor, {oJungle} asegura el objetivo y {oppName} sentencia la partida.',
+      'Tu equipo compite, pero el rival castiga mejor los errores finales. La run se detiene aquí.',
+      'No alcanza la remontada. {oppName} aguanta la presión, encuentra el pick clave y acaba cerrando la serie.',
     ],
-    s7Loss: [
-      "¡Colapso total! {oMid} encuentra un flanco perfecto destrozando la retaguardia de tu squad.",
-      "Cazados en la maleza oscura. Tu tirador {dAdc} cae fulminado antes de reaccionar."
-    ]
   },
   en: {
-    s1: [
-      "Aggressive Level 1 invasion! {dSup} flashes forward initiating a deep jungle skirmish.",
-      "Under Coach {dCoach}'s meticulous strategical blueprint, your team maps out a perfect defense.",
-      "{dJungle} drops deep wards deciphering the early game pathing of {oJungle}."
+    setup: [
+      'The Rift opens with jungle tracking: {dJungle} drops deep vision while Coach {dCoach} calls for patience.',
+      'Tense early game. {dSup} hovers river, {dMid} protects mid priority and {oppName} answers with a tight defensive setup.',
+      'A measured level one: both teams test the tempo, but {dTop} is already pushing for side-lane priority.',
+      'The opening plan is clear: vision control, stable lanes and punish the first mistake from {oppName}.',
     ],
-    s2: [
-      "FIRST BLOOD! {dJungle} pilotting {dJungleChamp} pulls off a stellar gank to execute {oMid}.",
-      "SOLO KILL! Showing elite micro reflexes, {dTop} completely humbles {oTop} in the top lane.",
-      "Double kill in the bot lane! {dAdc} and {dSup} establish complete lane dominance."
+    playerLead: [
+      'Your team takes the lead ({score}). {dJungle} punishes the enemy pathing and converts lane pressure into map control.',
+      '{dMid} moves first from mid and forces a clean pick. Your roster now leads: {score}.',
+      'Great trade for your squad. {dAdc} spaces perfectly while {dSup} keeps the backline alive.',
+      'Lane priority is starting to matter. {dTop} creates side pressure and forces {oppName} to answer late.',
+      'Coach {dCoach} reads the map perfectly: quick rotation, river vision and another punish in the enemy jungle.',
     ],
-    s3: [
-      "Your team captures Void Grubs, drastically accelerating tower pressure.",
-      "{dJungle} secures Ocean Dragon with ease, utilizing lane priority.",
-      "{dTop} teleports bot side to punish an overextension by {oppName}."
+    opponentLead: [
+      '{oppName} strikes first and pushes the score to {score}. Your team needs to clear vision before the next objective.',
+      'Bad tempo window: {oJungle} finds the angle and punishes an overextended rotation.',
+      'The game gets harder. {oMid} wins mid priority and {oppName} starts closing the map.',
+      'Bot side loses vision and {oppName} turns one pick into dragon pressure. Current score: {score}.',
+      'The opponent is reading the reset timers well. Time to slow it down and avoid another shutdown.',
     ],
-    s4: [
-      "Rift Herald Teamfight! {dTop} delivers a crucial crowd control combo on {oTop}.",
-      "{dMid} unleashes massive damage output with {dMidChamp}, disarming the opponent.",
-      "The botlane secures a swift catch on {oAdc}, opening pathing to take tier 1 tower."
+    even: [
+      'The game is on a knife-edge ({score}). Nobody has broken the map yet and the next objective can decide the tempo.',
+      'Chaotic river trade: both teams spend resources, but nobody gets a clean exit.',
+      'The lead changes with every wave. Coach {dCoach} calls for patience: no need to force without vision.',
+      'Heavy dance around the objective. One clean engage can split the game wide open.',
     ],
-    s5: [
-      "High stakes tactical dance around Baron Nashor pits Coach {dCoach} against opposing intellect.",
-      "Stellar spacing! ADC {dAdc} dodges consecutive skillshots using micro mechanics.",
-      "Splitting pressure from {dTop} forces {oppName} to pivot, fracturing their formation."
+    swingToPlayer: [
+      'Comeback loading! {dJungle} wins the smite, {dMid} arrives first and your team flips the score: {score}.',
+      'Script flipped! {dSup} finds the engage, {dAdc} cleans up and {oppName} loses river control.',
+      'Your squad punishes the overconfidence. Key shutdown secured and the game breathes again.',
+      'Brilliant call from Coach {dCoach}: Baron bait, instant collapse and the lead changes hands.',
     ],
-    s6Win: [
-      "LEGENDARY BARON STEAL! Jungler {dJungle} slides in with an immaculate smite!",
-      "Perfect Baron bait. {dAdc} and the squad collapse on {oppName} wiping out their front line."
+    swingToOpponent: [
+      'Throw warning! Your squad overextends and {oppName} punishes the positioning mistake. Score: {score}.',
+      'The enemy answers with a fog-of-war catch. {dAdc} drops before dealing damage and the fight falls apart.',
+      'The lead slips away after a risky river entry. {oMid} finds the flank and breaks the formation.',
+      'Too much risk without vision. {oppName} reads the play and turns defense into counterattack.',
     ],
-    s6Loss: [
-      "Disaster! Opposing jungler {oJungle} secures Baron Nashor, putting your squad in check.",
-      "Trapped in the pit, a devastating combination from {oMid} breaks through your defensive line."
+    finalWin: [
+      'Decisive ACE! {dMid} finds the final engage, {dAdc} cleans the fight and your team closes with {score}.',
+      'Hard-earned victory! Baron, synced waves and clean execution: {oppName} cannot survive the final siege.',
+      'Coach {dCoach} makes the perfect final call. Your team forces the right fight, wins the 5v5 and advances.',
+      'GG! After a game full of swings, your roster finds the decisive fight and destroys the Nexus.',
     ],
-    s7Win: [
-      "SENSATIONAL ACE! {dMid} lands a monumental ultimate with {dMidChamp}. Victory is imminent!",
-      "QUADRA KILL FOR {dAdc}! Supported by {dSup}'s perfect peeling, wiping {oppName} off the map."
+    finalLoss: [
+      'Painful defeat. {oppName} finds the decisive fight, breaks the backline and closes the map with {score}.',
+      'The last fight goes wrong: no Baron vision, {oJungle} secures the objective and {oppName} ends the game.',
+      'Your squad competes, but the opponent punishes the final mistakes better. The run ends here.',
+      'The comeback is not enough. {oppName} absorbs the pressure, finds the key pick and closes the series.',
     ],
-    s7Loss: [
-      "Defensive line breached! Opposing carries find an angle and dismantle your backline.",
-      "Ambushed in the dark bush. {dAdc} is deleted before entering the decisive skirmish."
-    ]
   },
   fr: {
-    s1: [
-      "Invasion agressive au niveau 1 ! {dSup} utilise Saut Éclair pour initier le combat.",
-      "Sous les directives tactiques de Coach {dCoach}, l'équipe déploie une défense parfaite.",
-      "{dJungle} pose des balises profondes pour décoder le parcours de {oJungle}."
+    setup: [
+      'La Faille s’ouvre avec une lecture de jungle : {dJungle} pose une vision profonde et Coach {dCoach} demande de la patience.',
+      'Début tendu. {dSup} contrôle la rivière, {dMid} garde la priorité mid et {oppName} répond avec une défense serrée.',
+      'Niveau 1 prudent : les deux équipes testent le tempo, mais {dTop} cherche déjà la priorité latérale.',
+      'Le plan est clair : contrôle de vision, lanes stables et punir la première erreur de {oppName}.',
     ],
-    s2: [
-      "PREMIER SANG ! {dJungle} avec {dJungleChamp} surprend et élimine {oMid}.",
-      "SOLO KILL ! Grâce à des réflexes divins, {dTop} domine {oTop} sur la voie du haut.",
-      "Double élimination en botlane ! {dAdc} et {dSup} détruisent le duo adverse."
+    playerLead: [
+      'Votre équipe prend l’avantage ({score}). {dJungle} punit le pathing adverse et transforme la pression en contrôle de carte.',
+      '{dMid} bouge le premier depuis le mid et force un pick propre. Votre roster mène : {score}.',
+      'Très bon échange. {dAdc} garde un spacing parfait pendant que {dSup} protège la backline.',
+      'La priorité de lane commence à peser. {dTop} crée une pression latérale qui force {oppName} à répondre trop tard.',
     ],
-    s3: [
-      "Votre équipe sécurise les larves du Néant pour accélérer la pression de poussée.",
-      "{dJungle} capture le Dragon des Océans sans contestation.",
-      "{dTop} utilise sa téléportation pour punir une rotation de {oppName}."
+    opponentLead: [
+      '{oppName} frappe d’abord et mène {score}. Votre équipe doit nettoyer la vision avant le prochain objectif.',
+      'Mauvaise fenêtre de tempo : {oJungle} trouve l’angle et punit une rotation trop profonde.',
+      'La partie se complique. {oMid} gagne la priorité mid et {oppName} commence à fermer la carte.',
+      'La botlane perd la vision et {oppName} transforme un pick en pression dragon. Score actuel : {score}.',
     ],
-    s4: [
-      "Combat autour de l'Héraut de la Faille ! {dTop} applique un contrôle de foule massif.",
-      "{dMid} inflige d'énormes dégâts magiques avec {dMidChamp} pour disperser l'ennemi.",
-      "La botlane attrape {oAdc} et s'empare de la première tourelle."
+    even: [
+      'La partie est sur un fil ({score}). Personne ne casse vraiment la carte et le prochain objectif peut tout changer.',
+      'Échange chaotique en rivière : beaucoup de ressources dépensées, mais personne ne sort vraiment gagnant.',
+      'L’avantage change à chaque vague. Coach {dCoach} demande de la patience : pas de force sans vision.',
+      'Danse tendue autour de l’objectif. Un seul engage propre peut ouvrir la partie.',
     ],
-    s5: [
-      "Pression et danse stratégique autour du Baron Nashor motivées par coach {dCoach}.",
-      "Esquive fantastique ! {dAdc} démontre une micro-performance irréprochable.",
-      "La pression latérale de {dTop} force {oppName} à se diviser en désordre."
+    swingToPlayer: [
+      'La remontée commence ! {dJungle} gagne le smite, {dMid} arrive en premier et votre équipe retourne le score : {score}.',
+      'Changement de scénario ! {dSup} trouve l’engage, {dAdc} nettoie le fight et {oppName} perd la rivière.',
+      'Votre équipe punit l’excès de confiance adverse. Shutdown clé et la partie respire de nouveau.',
+      'Lecture brillante de Coach {dCoach} : bait Baron, collapse immédiat et l’avantage change de camp.',
     ],
-    s6Win: [
-      "VOL DE BARON HISTORIQUE ! Le jungler {dJungle} plonge et sécurise l'objectif à la dernière seconde !",
-      "Appât parfait sur le Baron. {dAdc} élimine la patrouille ennemi."
+    swingToOpponent: [
+      'Attention au throw ! Votre équipe force trop loin et {oppName} punit le mauvais placement. Score : {score}.',
+      'L’adversaire répond avec un catch dans le brouillard de guerre. {dAdc} tombe avant de DPS.',
+      'L’avantage s’échappe après une entrée risquée en rivière. {oMid} trouve le flank parfait.',
+      'Trop de risque sans vision. {oppName} lit le play et transforme la défense en contre-attaque.',
     ],
-    s6Loss: [
-      "Catastrophe ! Le jungler adverse {oJungle} s'empare du Baron Nashor.",
-      "Coincé dans la fosse, un combo combiné de {oMid} anéantit nos espoirs."
+    finalWin: [
+      'ACE décisif ! {dMid} trouve l’engage final, {dAdc} nettoie le fight et votre équipe conclut en {score}.',
+      'Victoire méritée ! Baron, vagues synchronisées et exécution propre : {oppName} ne tient pas le dernier siège.',
+      'Dernier call parfait de Coach {dCoach}. Votre équipe force le bon 5v5 et passe au tour suivant.',
+      'GG ! Après une partie pleine de retournements, votre roster trouve le fight décisif et détruit le Nexus.',
     ],
-    s7Win: [
-      "SENSATIONNEL ACE ! {dMid} réussit un ultime dévastateur avec {dMidChamp}. C'est la victoire !",
-      "QUADRA KILL POUR {dAdc} ! Protégé par {dSup}, il décime toute l'équipe {oppName}."
+    finalLoss: [
+      'Défaite douloureuse. {oppName} trouve le fight décisif, casse la backline et ferme la carte en {score}.',
+      'Le dernier fight tourne mal : pas de vision Baron, {oJungle} sécurise l’objectif et {oppName} termine.',
+      'Votre équipe se bat, mais l’adversaire punit mieux les erreurs finales. La run s’arrête ici.',
+      'La remontée ne suffit pas. {oppName} absorbe la pression, trouve le pick clé et clôt la série.',
     ],
-    s7Loss: [
-      "L'ennemi brise notre défense ! {oMid} s'infiltre et décime notre ligne arrière.",
-      "Embuscade mortelle. {dAdc} est éliminé instantanément sans pouvoir réagir."
-    ]
   },
   de: {
-    s1: [
-      "Aggressive Invasion auf Stufe 1! {dSup} blitzt vor und zwingt den Gegner zum Rückzug.",
-      "Unter der strategischen Anleitung von Coach {dCoach} steht die Verteidigung bombensicher.",
-      "{dJungle} platziert tiefe Wards, um {oJungle}s Pfad im gegnerischen Dschungel aufzudecken."
+    setup: [
+      'Die Kluft startet mit Jungle-Tracking: {dJungle} setzt tiefe Sicht und Coach {dCoach} fordert Geduld.',
+      'Angespannter Start. {dSup} kontrolliert den Fluss, {dMid} hält Mid-Priorität und {oppName} verteidigt eng.',
+      'Vorsichtiges Level 1: Beide Teams testen das Tempo, aber {dTop} sucht bereits Side-Lane-Priorität.',
+      'Der Plan ist klar: Sichtkontrolle, stabile Lanes und den ersten Fehler von {oppName} bestrafen.',
     ],
-    s2: [
-      "FIRST BLOOD! {dJungle} gankt auf {dJungleChamp} meisterhaft und eliminiert {oMid}.",
-      "SOLO KILL! Mit überragenden Reflexen bezwingt {dTop} seinen Gegner {oTop} im 1v1.",
-      "Doppelpack im Botlane-Duell! {dAdc} und {dSup} dominieren komplett."
+    playerLead: [
+      'Dein Team übernimmt die Führung ({score}). {dJungle} bestraft das gegnerische Pathing und gewinnt Map-Kontrolle.',
+      '{dMid} rotiert zuerst aus der Mitte und erzwingt einen sauberen Pick. Dein Roster führt: {score}.',
+      'Guter Trade für dein Team. {dAdc} spielt perfektes Spacing und {dSup} schützt die Backline.',
+      'Lane-Priorität wird spürbar. {dTop} baut Seitendruck auf und zwingt {oppName} zu einer späten Antwort.',
     ],
-    s3: [
-      "Ihr Team sichert sich die Leerenmaden und reißt feindliche Türme im Nu ein.",
-      "Dschungler {dJungle} beansprucht den Ozeandrachen ohne Gegenwehr.",
-      "{dTop} teleportiert sich nach unten, um einen Fehler von {oppName} eiskalt zu bestrafen."
+    opponentLead: [
+      '{oppName} schlägt zuerst zu und stellt auf {score}. Dein Team muss vor dem nächsten Ziel die Sicht klären.',
+      'Schlechtes Tempofenster: {oJungle} findet den Winkel und bestraft eine zu tiefe Rotation.',
+      'Das Spiel wird schwieriger. {oMid} gewinnt Mid-Priorität und {oppName} schließt die Karte.',
+      'Bot verliert die Sicht und {oppName} macht aus einem Pick Druck auf den Drachen. Stand: {score}.',
     ],
-    s4: [
-      "Kampf um den Herold! {dTop} setzt eine entscheidende Massenkontrolle auf {oTop} an.",
-      "{dMid} entfesselt mit {dMidChamp} massiven Schaden und zerschlägt die feindlichen Reihen.",
-      "Perfekter Catch auf {oAdc} führt zum sicheren Einsturz des ersten gegnerischen Turms."
+    even: [
+      'Das Spiel steht auf Messers Schneide ({score}). Das nächste Ziel kann das Tempo komplett drehen.',
+      'Chaotischer Fight am Fluss: Beide Teams investieren viel, aber niemand kommt sauber heraus.',
+      'Die Führung wechselt mit jeder Wave. Coach {dCoach} fordert Geduld: nicht ohne Sicht forcen.',
+      'Tanz um das Objective. Ein sauberer Engage kann das Spiel öffnen.',
     ],
-    s5: [
-      "Ein nervenaufreibendes taktisches Duell um Baron Nashor fordert Coach {dCoach} heraus.",
-      "Geniales Spacing! {dAdc} weicht mit überragender Mikromechanik allen Angriffen aus.",
-      "Der Splitpush von {dTop} reißt die Verteidigung von {oppName} komplett auseinander."
+    swingToPlayer: [
+      'Comeback läuft! {dJungle} gewinnt den Smite, {dMid} ist zuerst da und dein Team dreht den Stand: {score}.',
+      'Drehbuchwechsel! {dSup} findet den Engage, {dAdc} räumt auf und {oppName} verliert die Flusskontrolle.',
+      'Dein Team bestraft die gegnerische Überheblichkeit. Wichtiger Shutdown, das Spiel lebt wieder.',
+      'Starker Call von Coach {dCoach}: Baron-Bait, sofortiger Collapse und die Führung wechselt.',
     ],
-    s6Win: [
-      "LEGENDÄRER BARON-STEAL! {dJungle} springt todesmutig im letzten Moment rein!",
-      "Hinterhalt am Baron geglückt. {dAdc} fegt den Gegner vom Feld."
+    swingToOpponent: [
+      'Throw-Gefahr! Dein Team überzieht und {oppName} bestraft das Positioning. Stand: {score}.',
+      'Der Gegner antwortet mit einem Catch aus dem Fog of War. {dAdc} fällt, bevor Schaden kommt.',
+      'Die Führung rutscht weg nach einem riskanten Flusseingang. {oMid} findet die perfekte Flanke.',
+      'Zu viel Risiko ohne Sicht. {oppName} liest den Play und macht aus Verteidigung Gegenangriff.',
     ],
-    s6Loss: [
-      "Katastrophe! Der feindliche Dschungler {oJungle} stiehlt Baron Nashor.",
-      "In der Baron-Grube eingekesselt, zerlegt {oMid} die Hoffnung des gesamten Teams."
+    finalWin: [
+      'Entscheidendes ACE! {dMid} findet den finalen Engage, {dAdc} räumt auf und dein Team beendet mit {score}.',
+      'Erarbeiteter Sieg! Baron, synchronisierte Waves und saubere Ausführung: {oppName} hält den letzten Siege nicht.',
+      'Perfekter letzter Call von Coach {dCoach}. Dein Team erzwingt den richtigen 5v5-Fight und kommt weiter.',
+      'GG! Nach vielen Swings findet dein Roster den entscheidenden Fight und zerstört den Nexus.',
     ],
-    s7Win: [
-      "SENSATIONELLES ACE! {dMid} landet die ultimative Fähigkeit mit {dMidChamp}. Der Sieg ist da!",
-      "QUADRA KILL FÜR {dAdc}! Perfekter Schutz von {dSup} sichert die Zerstörung des Gegners."
+    finalLoss: [
+      'Bittere Niederlage. {oppName} findet den entscheidenden Fight, bricht die Backline und beendet mit {score}.',
+      'Der letzte Fight kippt: keine Baron-Sicht, {oJungle} sichert das Objective und {oppName} schließt ab.',
+      'Dein Team kämpft, aber der Gegner bestraft die letzten Fehler besser. Die Run endet hier.',
+      'Das Comeback reicht nicht. {oppName} hält dem Druck stand, findet den Schlüssel-Pick und beendet die Serie.',
     ],
-    s7Loss: [
-      "Einbruch der Verteidigung! {oMid} flankiert genial und löscht das Team aus.",
-      "Im Gebüsch kalt erwischt. {dAdc} stirbt, bevor der Teamkampf überhaupt beginnt."
-    ]
   },
   it: {
-    s1: [
-      "Invasione aggressiva al Livello 1! {dSup} usa Flash e lancia l'attacco.",
-      "Grazie alle direttive strategiche di Coach {dCoach}, l'imboscata viene disinnescata.",
-      "{dJungle} piazza lumi profondi svelando la traiettoria iniziale di {oJungle}."
+    setup: [
+      'La Landa si apre con lettura della giungla: {dJungle} piazza visione profonda e Coach {dCoach} chiede pazienza.',
+      'Avvio teso. {dSup} controlla il fiume, {dMid} mantiene priorità mid e {oppName} risponde con difesa compatta.',
+      'Livello 1 prudente: entrambi testano il tempo, ma {dTop} cerca già priorità laterale.',
+      'Piano chiaro: controllo visione, corsie stabili e punire il primo errore di {oppName}.',
     ],
-    s2: [
-      "PRIMO SANGUE! {dJungle} usa al meglio {dJungleChamp} e abbatte con astuzia {oMid}.",
-      "UCCISIONE IN SOLITARIA! Riflessi d'acciaio: {dTop} annienta {oTop} sulla corsia superiore.",
-      "Doppia uccisione in botlane! {dAdc} e {dSup} spazzano via gli avversari."
+    playerLead: [
+      'Il tuo team prende vantaggio ({score}). {dJungle} punisce il pathing rivale e converte pressione in controllo mappa.',
+      '{dMid} ruota per primo dal mid e forza un pick pulito. Il tuo roster conduce: {score}.',
+      'Ottimo scambio. {dAdc} gioca con spacing perfetto e {dSup} protegge la backline.',
+      'La priorità di corsia pesa. {dTop} crea pressione laterale e costringe {oppName} a rispondere tardi.',
     ],
-    s3: [
-      "Il tuo team assicura le Larve del Vuoto, velocizzando la demolizione delle torri.",
-      "{dJungle} reclama il Drago dell'Oceano senza subire alcun danno.",
-      "{dTop} usa il Teletrasporto e punisce severamente un errore di posizionamento di {oppName}."
+    opponentLead: [
+      '{oppName} colpisce per primo e porta il punteggio su {score}. Serve ripulire la visione prima del prossimo obiettivo.',
+      'Finestra di tempo negativa: {oJungle} trova l’angolo e punisce una rotazione troppo profonda.',
+      'La partita si complica. {oMid} prende priorità mid e {oppName} inizia a chiudere la mappa.',
+      'La botlane perde visione e {oppName} trasforma un pick in pressione drago. Score attuale: {score}.',
     ],
-    s4: [
-      "Scontro cruciale per l'Araldo! {dTop} stordisce la frontline avversaria con maestria.",
-      "{dMid} usa {dMidChamp} ed eroga un danno spaventoso respingendo {oppName}.",
-      "La botlane blocca il tiratore avversario regalando la prima torre del match."
+    even: [
+      'Partita sul filo ({score}). Nessuno rompe davvero la mappa e il prossimo obiettivo può decidere il tempo.',
+      'Scambio caotico nel fiume: risorse spese da entrambi, ma nessuno esce veramente pulito.',
+      'Il vantaggio cambia a ogni wave. Coach {dCoach} chiede calma: non forzare senza visione.',
+      'Danza pesante attorno all’obiettivo. Un engage pulito può spaccare la partita.',
     ],
-    s5: [
-      "Assedio tattico attorno al Barone. Coach {dCoach} impone il controllo totale della mappa.",
-      "Meccaniche perfette! {dAdc} schiva le abilità nemiche con precisione millimetrica.",
-      "La pressione laterale esercitata da {dTop} disperde le file di {oppName}."
+    swingToPlayer: [
+      'Rimonta in corso! {dJungle} vince lo smite, {dMid} arriva prima e il team gira il punteggio: {score}.',
+      'Cambio di copione! {dSup} trova l’engage, {dAdc} pulisce la fight e {oppName} perde il fiume.',
+      'Il tuo team punisce l’eccesso di fiducia. Shutdown chiave e la partita respira di nuovo.',
+      'Lettura brillante di Coach {dCoach}: bait al Barone, collapse immediato e vantaggio ribaltato.',
     ],
-    s6Win: [
-      "FURTO DECORATO DEL BARONE! Il coraggioso jungler {dJungle} si lancia e ruba l'obiettivo!",
-      "Trappola perfetta al Barone. {dAdc} distrugge la difesa avversaria."
+    swingToOpponent: [
+      'Rischio throw! Il tuo team esagera e {oppName} punisce il posizionamento. Score: {score}.',
+      'Il rivale risponde con un pick nella nebbia di guerra. {dAdc} cade prima di fare danno.',
+      'Il vantaggio scivola via dopo un ingresso rischioso nel fiume. {oMid} trova il flank perfetto.',
+      'Troppo rischio senza visione. {oppName} legge la giocata e trasforma la difesa in contrattacco.',
     ],
-    s6Loss: [
-      "Disastro totale! Il jungler oponente {oJungle} sconfigge il Barone.",
-      "Intrappolati nella fossa del drago, la letale combo di {oMid} distrugge le nostre speranze."
+    finalWin: [
+      'ACE decisivo! {dMid} trova l’engage finale, {dAdc} chiude la fight e il team vince con {score}.',
+      'Vittoria sudata! Barone, wave sincronizzate ed esecuzione pulita: {oppName} non regge l’ultimo assedio.',
+      'Ultima chiamata perfetta di Coach {dCoach}. Il tuo team forza il 5v5 giusto e avanza.',
+      'GG! Dopo una partita piena di swing, il roster trova la fight decisiva e distrugge il Nexus.',
     ],
-    s7Win: [
-      "SENSACIONAL ACE! {dMid} lancia un'eccellente abilità suprema con {dMidChamp}. Vittoria!",
-      "QUADRA KILL PER {dAdc}! Con lo scudo provvidenziale di {dSup}, demolisce {oppName}."
+    finalLoss: [
+      'Sconfitta dolorosa. {oppName} trova la fight decisiva, rompe la backline e chiude con {score}.',
+      'Ultima fight sbagliata: niente visione al Barone, {oJungle} assicura l’obiettivo e {oppName} termina.',
+      'Il tuo team compete, ma il rivale punisce meglio gli errori finali. La run finisce qui.',
+      'La rimonta non basta. {oppName} regge la pressione, trova il pick chiave e chiude la serie.',
     ],
-    s7Loss: [
-      "La linea difensiva cede. {oMid} penetra la linea posteriore decimando il team.",
-      "Imboscata letale nella nebbia. {dAdc} cade prima di poter reagire."
-    ]
   },
   pt: {
-    s1: [
-      "Invasão agressiva de nível 1! {dSup} usa o Flash para roubar o bônus inimigo.",
-      "Sob o plano tático do Coach {dCoach}, a equipe se defende de forma primorosa.",
-      "{dJungle} posiciona sentinelas profundas revelando o caminho de {oJungle}."
+    setup: [
+      'A Selva começa com leitura de rota: {dJungle} coloca visão profunda e Coach {dCoach} pede paciência.',
+      'Início tenso. {dSup} controla o rio, {dMid} segura prioridade no meio e {oppName} responde com defesa fechada.',
+      'Nível 1 calculado: as duas equipes testam o tempo, mas {dTop} já busca prioridade lateral.',
+      'Plano claro: controle de visão, rotas estáveis e punir o primeiro erro de {oppName}.',
     ],
-    s2: [
-      "FIRST BLOOD! {dJungle} utilizando {dJungleChamp} executa um gank perfeito contra {oMid}.",
-      "SOLO KILL! Com reflexos extraordinários, {dTop} aniquila {oTop} na rota do topo.",
-      "Double kill no bot! {dAdc} e {dSup} assumem controle total da rota."
+    playerLead: [
+      'Sua equipe assume a frente ({score}). {dJungle} pune a rota inimiga e transforma pressão em controle de mapa.',
+      '{dMid} se move primeiro pelo meio e força um pick limpo. Seu roster lidera: {score}.',
+      'Boa troca para sua equipe. {dAdc} joga com spacing perfeito enquanto {dSup} protege a backline.',
+      'A prioridade de rotas começa a pesar. {dTop} cria pressão lateral e força {oppName} a responder tarde.',
     ],
-    s3: [
-      "Sua equipe garante as Larvas do Vazio, impulsionando a queda das torres.",
-      "{dJungle} garante o Dragão do Oceano com controle de mapa soberbo.",
-      "{dTop} usa teleporte para punir um deslize de posicionamento da {oppName}."
+    opponentLead: [
+      '{oppName} bate primeiro e coloca o placar em {score}. Sua equipe precisa limpar visão antes do próximo objetivo.',
+      'Janela ruim de tempo: {oJungle} encontra o ângulo e pune uma rotação profunda demais.',
+      'A partida complica. {oMid} ganha prioridade no meio e {oppName} começa a fechar o mapa.',
+      'A botlane fica sem visão e {oppName} transforma um pick em pressão de dragão. Placar: {score}.',
     ],
-    s4: [
-      "Batalha pelo Arauto do Vale! {dTop} realiza um controle de grupo devastador.",
-      "{dMid} descarrega dano massivo com {dMidChamp} dizimando a oposição.",
-      "A dupla do bot elimina {oAdc} facilitando a conquista da primeira torre."
+    even: [
+      'Partida no limite ({score}). Ninguém quebra o mapa e o próximo objetivo pode decidir o tempo.',
+      'Troca caótica no rio: recursos dos dois lados, mas ninguém sai realmente limpo.',
+      'A vantagem muda a cada wave. Coach {dCoach} pede calma: não forçar sem visão.',
+      'Dança pesada ao redor do objetivo. Um engage limpo pode abrir a partida.',
     ],
-    s5: [
-      "Duelo estratégico ao redor do Barão Nashor. O Coach {dCoach} guia o posicionamento de visão.",
-      "Mecânica espetacular! O atirador {dAdc} esquiva-se de todas as habilidades enviadas.",
-      "A rotação dividida de {dTop} quebra as defesas inimigas da {oppName}."
+    swingToPlayer: [
+      'Virada em andamento! {dJungle} vence o smite, {dMid} chega primeiro e sua equipe vira o placar: {score}.',
+      'Mudança de roteiro! {dSup} encontra o engage, {dAdc} limpa a luta e {oppName} perde o rio.',
+      'Sua equipe pune a confiança exagerada rival. Shutdown chave e a partida volta a respirar.',
+      'Leitura brilhante de Coach {dCoach}: bait no Barão, collapse imediato e vantagem trocada.',
     ],
-    s6Win: [
-      "ROUBO SENSACIONAL DE BARÃO! {dJungle} avança destemido e rouba o bônus crucial!",
-      "Armadilha perfeita no rio. {dAdc} avança dizimando a linha de defesa inimiga."
+    swingToOpponent: [
+      'Perigo de throw! Sua equipe força demais e {oppName} pune o posicionamento. Placar: {score}.',
+      'O rival responde com um pick na névoa de guerra. {dAdc} cai antes de causar dano.',
+      'A vantagem escapa após uma entrada arriscada no rio. {oMid} acha o flanco perfeito.',
+      'Risco demais sem visão. {oppName} lê a jogada e transforma defesa em contra-ataque.',
     ],
-    s6Loss: [
-      "Tragédia! O caçador inimigo {oJungle} rouba o Barão Nashor com facilidade.",
-      "Encurralados na rota, o combo combinado de {oMid} destrói a vida de seus campeões."
+    finalWin: [
+      'ACE decisivo! {dMid} encontra o engage final, {dAdc} limpa a luta e sua equipe fecha em {score}.',
+      'Vitória trabalhada! Barão, waves sincronizadas e execução limpa: {oppName} não aguenta o último cerco.',
+      'Chamada final perfeita de Coach {dCoach}. Sua equipe força o 5v5 certo e avança.',
+      'GG! Depois de muitos swings, seu roster encontra a luta decisiva e destrói o Nexus.',
     ],
-    s7Win: [
-      "SENSACIONAL ACE! {dMid} executa a ultimate definitiva perfeita com {dMidChamp}!",
-      "QUADRA KILL DE {dAdc}! Com suporte inigualável de {dSup}, limpa a batalha decisiva."
+    finalLoss: [
+      'Derrota dolorosa. {oppName} encontra a luta decisiva, quebra a backline e fecha com {score}.',
+      'A última luta dá errado: sem visão no Barão, {oJungle} garante o objetivo e {oppName} termina.',
+      'Sua equipe compete, mas o rival pune melhor os erros finais. A run acaba aqui.',
+      'A virada não basta. {oppName} segura a pressão, encontra o pick chave e fecha a série.',
     ],
-    s7Loss: [
-      "A defesa cai por terra! {oMid} surpreende pelas costas detonando seus atiradores.",
-      "Emboscados na selva. Seu tirador {dAdc} é eliminado num piscar de olhos."
-    ]
   },
   ru: {
-    s1: [
-      "Агрессивное вторжение на 1 уровне! {dSup} тратит скачок для зачистки вражеской зоны.",
-      "Под предводительством тренера {dCoach} команда демонстрирует оборонную стратегию.",
-      "{dJungle} расставляет варды раскрывая расположение соперника {oJungle}."
+    setup: [
+      'Ущелье открывается чтением леса: {dJungle} ставит глубокий вижен, а тренер {dCoach} просит терпения.',
+      'Напряжённое начало. {dSup} контролирует реку, {dMid} держит приоритет, а {oppName} отвечает плотной обороной.',
+      'Осторожный первый уровень: команды проверяют темп, но {dTop} уже давит боковую линию.',
+      'План понятен: контроль вижена, стабильные линии и наказание первой ошибки {oppName}.',
     ],
-    s2: [
-      "ПЕРВАЯ КРОВЬ! Лесник {dJungle} на {dJungleChamp} делает идеальный ганк на мид и убивает {oMid}.",
-      "СОЛО КИЛЛ! {dTop} наказывает {oTop} на верхней линии благодаря выдающейся реакции.",
-      "Двойное убийство на боте! {dAdc} и {dSup} подчиняют себе нижнюю линию."
+    playerLead: [
+      'Ваша команда выходит вперёд ({score}). {dJungle} наказывает маршрут соперника и переводит давление в контроль карты.',
+      '{dMid} первым уходит с мида и находит чистый пик. Ваш состав ведёт: {score}.',
+      'Отличный размен. {dAdc} держит дистанцию, а {dSup} защищает бэклайн.',
+      'Приоритет линий начинает решать. {dTop} создаёт боковое давление и заставляет {oppName} отвечать поздно.',
     ],
-    s3: [
-      "Ваша команда забирает Личинок Бездны, доминируя на дальних линиях.",
-      "{dJungle} без проблем убивает Океанического Дракона.",
-      "{dTop} телепортируется на бот чтобы покарать за ошибку {oppName}."
+    opponentLead: [
+      '{oppName} бьёт первым и ставит счёт {score}. Нужно зачистить вижен перед следующим объектом.',
+      'Плохое окно темпа: {oJungle} находит угол и наказывает слишком глубокую ротацию.',
+      'Игра усложняется. {oMid} забирает приоритет мида, и {oppName} начинает закрывать карту.',
+      'Бот теряет вижен, а {oppName} превращает пик в давление на дракона. Счёт: {score}.',
     ],
-    s4: [
-      "Сражение за Герольда Ущелья! {dTop} сдаёт массовый контроль по врагу.",
-      "{dMid} наносит безумный урон с {dMidChamp} разрезая защиту оппонентов.",
-      "Ботлейн ловит соперника {oAdc}, что открывает путь к первой вышке."
+    even: [
+      'Игра на тонкой грани ({score}). Никто не ломает карту, и следующий объект может решить темп.',
+      'Хаотичный размен на реке: ресурсы потрачены с обеих сторон, но чистого преимущества нет.',
+      'Преимущество меняется с каждой волной. Тренер {dCoach} просит не форсить без вижена.',
+      'Танец вокруг объекта. Один чистый engage может открыть игру.',
     ],
-    s5: [
-      "Тактический танец у Барона Нашора. Опыт тренера {dCoach} помогает занять позиции.",
-      "Потрясающее уклонение! {dAdc} уворачивается от всех умений, демонстрируя микроконтроль.",
-      "Сплит-пуш от {dTop} заставляет {oppName} совершить фатальную перегруппировку."
+    swingToPlayer: [
+      'Камбэк начинается! {dJungle} выигрывает smite, {dMid} приходит первым и команда переворачивает счёт: {score}.',
+      'Сценарий меняется! {dSup} находит engage, {dAdc} дочищает драку, и {oppName} теряет реку.',
+      'Команда наказывает самоуверенность соперника. Важный shutdown, игра снова дышит.',
+      'Гениальный колл {dCoach}: bait на Бароне, мгновенный collapse и переворот преимущества.',
     ],
-    s6Win: [
-      "ЛЕГЕНДАРНЫЙ СТИЛ БАРОНА! Лесник {dJungle} влетает в логово и забирает Нашора!",
-      "Превосходная ловушка у Барона. {dAdc} разделывается с защитниками врага."
+    swingToOpponent: [
+      'Опасность throw! Команда заходит слишком далеко, и {oppName} наказывает позиционку. Счёт: {score}.',
+      'Соперник отвечает ловушкой из тумана войны. {dAdc} падает до нанесения урона.',
+      'Преимущество уходит после рискованного входа на реку. {oMid} находит идеальный фланг.',
+      'Слишком много риска без вижена. {oppName} читает play и превращает защиту в контратаку.',
     ],
-    s6Loss: [
-      "Трагедия! Вражеский лесник {oJungle} забивает Нашора из-под носа команды.",
-      "Окружены и уничтожены в речном загоне. Тяжёлый ультимейт {oMid} хоронит шансы."
+    finalWin: [
+      'Решающий ACE! {dMid} находит финальный engage, {dAdc} дочищает fight, и команда закрывает {score}.',
+      'Трудовая победа! Барон, синхронные волны и чистое исполнение: {oppName} не выдерживает последнюю осаду.',
+      'Идеальный последний колл {dCoach}. Команда форсит правильный 5v5 и проходит дальше.',
+      'GG! После игры со множеством swings ваш состав находит решающую драку и ломает Nexus.',
     ],
-    s7Win: [
-      "ПОТРЯСАЮЩИЙ ТУЗ! {dMid} стирает врагов идеальной ультой на {dMidChamp}. Победа!",
-      "КВАДРАКИЛЛ ДЛЯ {dAdc}! Получив защитные щиты от {dSup}, расстреливает {oppName}."
+    finalLoss: [
+      'Болезненное поражение. {oppName} находит решающую драку, ломает бэклайн и закрывает {score}.',
+      'Последний fight идёт плохо: нет вижена на Бароне, {oJungle} забирает объект, и {oppName} заканчивает.',
+      'Команда борется, но соперник лучше наказывает финальные ошибки. Run заканчивается здесь.',
+      'Камбэка не хватает. {oppName} выдерживает давление, находит ключевой pick и закрывает серию.',
     ],
-    s7Loss: [
-      "Линия обороны разлетается! Вражеский мидер {oMid} заходит с тыла.",
-      "Смертельный зажим в кустах. Ваш стрелок {dAdc} погибает до начала битвы."
-    ]
   },
   ko: {
-    s1: [
-      "강력한 1레벨 인베이드! {dSup} 선수가 적극적인 점멸 변수로 상대를 압박합니다.",
-      "{dCoach} 감독의 짜임새 있는 밴픽 플랜 아래 팀이 빈틈없는 방어전을 펼칩니다.",
-      "{dJungle} 선수가 깊숙한 와딩을 통해 {oJungle}의 초반 동선을 예측합니다."
+    setup: [
+      '협곡이 열립니다. {dJungle}가 깊은 시야를 잡고 {dCoach} 감독은 첫 교전을 기다리라고 지시합니다.',
+      '초반 긴장감이 높습니다. {dSup}가 강가를 견제하고 {dMid}는 미드 주도권을 지킵니다.',
+      '조심스러운 1레벨입니다. 양 팀이 템포를 재는 동안 {dTop}은 사이드 주도권을 노립니다.',
+      '초반 계획은 분명합니다. 시야 장악, 안정적인 라인전, 그리고 {oppName}의 첫 실수를 응징하는 것.',
     ],
-    s2: [
-      "퍼스트 블러드! {dJungle} 선수가 {dJungleChamp}로 칼날 같은 갱킹을 성공시켜 {oMid}를 처치합니다.",
-      "솔로 킬! 피지컬 한계 돌파로 {dTop} 선수가 {oTop}를 완벽하게 제압합니다.",
-      "바텀 듀오 처치! {dAdc}와 {dSup}가 환상적인 호흡으로 상대 바텀을 무력화시킵니다."
+    playerLead: [
+      '우리 팀이 앞서갑니다 ({score}). {dJungle}가 상대 동선을 처벌하며 맵 장악으로 연결합니다.',
+      '{dMid}가 먼저 움직이며 깔끔한 픽을 만듭니다. 현재 스코어는 {score}.',
+      '좋은 교환입니다. {dAdc}는 완벽한 거리 조절을 보여주고 {dSup}는 후방을 지킵니다.',
+      '라인 주도권이 힘을 발휘합니다. {dTop}이 사이드 압박으로 {oppName}의 대응을 늦춥니다.',
     ],
-    s3: [
-      "우리 팀이 공허 유충을 완벽히 통제하며 상대 외곽 타워 압박을 극대화합니다.",
-      "{dJungle} 선수가 아군의 라인 주도권을 등에 업고 편안하게 대지 드래곤을 사냥합니다.",
-      "순간이동 연계! {dTop} 선수가 하단 지원 사격에 나서 오버파밍하던 {oppName}를 응징합니다."
+    opponentLead: [
+      '{oppName}이 먼저 앞서갑니다. 스코어는 {score}. 다음 오브젝트 전에 시야 정리가 필요합니다.',
+      '나쁜 템포입니다. {oJungle}가 각을 찾고 깊은 로테이션을 처벌합니다.',
+      '경기가 어려워집니다. {oMid}가 미드 주도권을 잡으며 {oppName}이 맵을 닫기 시작합니다.',
+      '바텀 시야가 사라졌고 {oppName}이 픽 하나를 드래곤 압박으로 바꿉니다. 현재 {score}.',
     ],
-    s4: [
-      "협곡의 전령을 둘러싼 대규모 한타! {dTop} 선수가 기막힌 군중제어로 이니시에이팅을 펼칩니다.",
-      "{dMid} 선수가 {dMidChamp}의 압도적인 누킹 딜링으로 상대 진영을 궤멸시킵니다.",
-      "바텀 정밀 낚시 성공! {oAdc}를 처치하고 손쉽게 바텀 포탑을 철거합니다."
+    even: [
+      '경기는 팽팽합니다 ({score}). 다음 오브젝트가 템포를 결정할 수 있습니다.',
+      '강가에서 혼전이 벌어집니다. 양쪽 모두 자원을 썼지만 확실한 승자는 없습니다.',
+      '웨이브마다 주도권이 바뀝니다. {dCoach} 감독은 시야 없는 무리한 싸움을 막습니다.',
+      '오브젝트 앞 신경전이 길어집니다. 깔끔한 이니시 하나가 경기를 가를 수 있습니다.',
     ],
-    s5: [
-      "내셔 남작 둥지 앞 눈치싸움! {dCoach} 감독의 오더가 빛을 발하며 시야 싸움을 승리합니다.",
-      "환상적인 무빙! 원거리 딜러 {dAdc} 선수가 완벽한 미세 조작으로 적의 포화를 흘려냅니다.",
-      "{dTop} 선수의 매서운 사이드 라인 압박에 {oppName}의 진영이 무너지기 시작합니다."
+    swingToPlayer: [
+      '역전의 흐름입니다! {dJungle}가 강타 싸움에서 이기고 {dMid}가 먼저 합류하며 스코어를 뒤집습니다: {score}.',
+      '흐름이 바뀝니다! {dSup}가 이니시를 열고 {dAdc}가 한타를 정리합니다.',
+      '상대의 과욕을 제대로 응징합니다. 중요한 셧다운으로 경기가 다시 살아납니다.',
+      '{dCoach} 감독의 콜이 빛납니다. 바론 미끼, 즉시 붕괴, 그리고 주도권 전환.',
     ],
-    s6Win: [
-      "전설적인 바론 스틸! {dJungle} 선수가 한계 상황에서 강타 싸움에 승리하며 역사를 만들어냅니다!",
-      "완벽한 바론 미끼 작전! 적이 둥지로 빨려 들어오자 {dAdc}가 전원을 섬멸시킵니다."
+    swingToOpponent: [
+      '스로우 위험입니다! 우리 팀이 너무 깊게 들어갔고 {oppName}이 포지셔닝을 처벌합니다. {score}.',
+      '상대가 전장의 안개에서 함정을 준비했습니다. {dAdc}가 딜하기 전에 먼저 쓰러집니다.',
+      '위험한 강가 진입 후 주도권이 흔들립니다. {oMid}가 완벽한 측면 진입을 찾았습니다.',
+      '시야 없는 과한 리스크입니다. {oppName}이 플레이를 읽고 역습으로 전환합니다.',
     ],
-    s6Loss: [
-      "바론 수성 실패! 상대 정글러 {oJungle}가 정밀한 스마이트로 내셔 남작을 도둑맞습니다.",
-      "둥지에 갇힌 채 {oMid} 선수의 광역 폭딜 연계에 휩쓸려 큰 손해를 입습니다."
+    finalWin: [
+      '결정적인 에이스! {dMid}가 마지막 이니시를 열고 {dAdc}가 정리하며 {score}로 승리합니다.',
+      '값진 승리입니다! 바론, 동기화된 웨이브, 깔끔한 실행으로 {oppName}은 마지막 공성을 버티지 못합니다.',
+      '{dCoach} 감독의 마지막 콜이 완벽합니다. 올바른 5대5를 강제하고 다음 라운드로 갑니다.',
+      'GG! 수많은 변곡점 끝에 로스터가 결정적 한타를 잡고 넥서스를 파괴합니다.',
     ],
-    s7Win: [
-      "센세이셔널 에이스! {dMid} 선수가 {dMidChamp}로 4인 궁 대박을 터뜨리며 승리를 확정 짓습니다!",
-      "{dAdc}의 쿼드라 킬! {dSup}의 눈부신 아군 케어 속에서 {oppName} 진영을 완벽히 추풍낙엽으로 만듭니다."
+    finalLoss: [
+      '아쉬운 패배입니다. {oppName}이 결정적 한타를 잡고 후방을 무너뜨리며 {score}로 마무리합니다.',
+      '마지막 한타가 무너집니다. 바론 시야가 없고 {oJungle}가 오브젝트를 확보합니다.',
+      '우리 팀도 맞섰지만 마지막 실수를 상대가 더 잘 처벌했습니다. run은 여기서 끝납니다.',
+      '역전에는 조금 부족했습니다. {oppName}이 압박을 버티고 핵심 픽을 찾아 시리즈를 닫습니다.',
     ],
-    s7Loss: [
-      "본대 방어구멍 발생! 상대 미드 {oMid} 선수가 날카로운 뒤라인 급습으로 주력 딜러진을 격발합니다.",
-      "어둠 속 대기 낚시에 당합니다! {dAdc} 선수가 스킬 회전 전에 폭사하며 한타가 패배로 기웁니다."
-    ]
   },
   zh: {
-    s1: [
-      "极其激进的1级入侵野区！辅助 {dSup} 交出闪现先手，点燃河道引信。",
-      "在主教练 {dCoach} 战旗妙法的布置下，全队打出了一波堪称教科书的完美防守反击。",
-      "打野 {dJungle} 做下极深的视野，完全摸透了敌方打野 {oJungle} 的前期刷野节奏。"
+    setup: [
+      '召唤师峡谷开局就进入野区博弈：{dJungle} 做下深视野，{dCoach} 要求队伍先稳住节奏。',
+      '开局十分紧张。{dSup} 控制河道，{dMid} 保持中路线权，{oppName} 则用严密防守回应。',
+      '谨慎的一级团试探。双方都在观察节奏，但 {dTop} 已经开始争夺边线主动权。',
+      '开局计划很明确：控视野、稳住线权，然后惩罚 {oppName} 的第一个失误。',
     ],
-    s2: [
-      "一血诞生！打野 {dJungle} 操刀 {dJungleChamp} 奉献绝伦中路阻击，瞬杀敌方 {oMid}！",
-      "单杀！上路 {dTop} 展现了极为恐怖的极限微操，在兵线前悍然斩杀对手 {oTop}！",
-      "下路打出线杀双杀！{dAdc} 携手 {dSup} 技能组合拉满，直接打穿了下路对垒。"
+    playerLead: [
+      '你的队伍取得领先（{score}）。{dJungle} 惩罚对方打野路线，并把线权转化为地图控制。',
+      '{dMid} 率先游走，完成一次干净的抓单。当前你的阵容领先：{score}。',
+      '这波交换很漂亮。{dAdc} 站位极好，{dSup} 稳稳保护后排。',
+      '线权开始发挥作用。{dTop} 制造边线压力，迫使 {oppName} 迟迟无法正面接团。',
     ],
-    s3: [
-      "我方战队无压力收下虚空巢虫，直接吹响了拔除敌方外塔的攻势号角。",
-      "中下线权在握，打野 {dJungle} 节奏美如画，兵不血刃控下首条大洋巨龙。",
-      "传送参战！上单 {dTop} 极限传送绕后，重创了执迷于入侵的 {oppName} 并拿回了主动权。"
+    opponentLead: [
+      '{oppName} 率先打开局面，比分来到 {score}。你的队伍必须先清理视野再争夺下个资源。',
+      '节奏窗口很差：{oJungle} 找到角度，惩罚了一次过深的转线。',
+      '局势开始变难。{oMid} 拿到中路线权，{oppName} 开始封锁地图。',
+      '下路失去视野，{oppName} 把一次抓单转化为小龙压力。当前比分：{score}。',
     ],
-    s4: [
-      "峡谷先锋团战爆发！上单 {dTop} 突施冷箭放出完美群体控制，一举锁死了敌方前排。",
-      "中单 {dMid} 使用其招牌 {dMidChamp} 轰出毁天灭地的高额爆发，击溃了敌方防线！",
-      "下路神射精准锁定！强势线杀敌方核心射手 {oAdc}，顺利拔除敌方下路一塔。"
+    even: [
+      '比赛非常胶着（{score}）。双方都还没打穿地图，下个资源可能决定节奏。',
+      '河道混战爆发：双方都交出大量资源，但没人能完全脱身。',
+      '优势随着每一波兵线变化。{dCoach} 要求队伍冷静：没有视野就不要强开。',
+      '资源点前持续拉扯。一次干净的开团就可能改变比赛。',
     ],
-    s5: [
-      "大龙坑前令人窒息的视野拉锯战！教练 {dCoach} 的战术指令回响，团队稳健地控制视野。",
-      "神级走位！射手 {dAdc} 在乱军之中辗转腾挪，细节微操片叶不沾身躲过致命技能。",
-      "上单 {dTop} 完美的边线分推逼迫 {oppName} 做出痛苦抉择，其防守阵脚瞬间严重失衡。"
+    swingToPlayer: [
+      '逆转开始！{dJungle} 赢下惩戒，{dMid} 率先赶到，你的队伍扭转比分：{score}。',
+      '剧情反转！{dSup} 找到完美先手，{dAdc} 收割战场，{oppName} 失去河道控制。',
+      '你的队伍惩罚了对方的贪心。关键 shutdown 到手，比赛重新有了呼吸空间。',
+      '{dCoach} 的判断太亮眼：大龙诱敌、瞬间包夹，优势转手。',
     ],
-    s6Win: [
-      "奇迹抢龙！打野 {dJungle} 在绝路之中搏命闪现抢龙，在千钧一发之际惩戒下大龙！",
-      "完美大龙逼团！敌方刚踏入河道便遭到埋伏，{dAdc} 绝境收割团灭了对手。"
+    swingToOpponent: [
+      '小心被翻！你的队伍过度深入，{oppName} 惩罚了站位失误。比分：{score}。',
+      '对方在战争迷雾中完成埋伏。{dAdc} 还没输出就被秒掉。',
+      '一次冒险的河道进入让优势溜走。{oMid} 找到完美侧翼切入。',
+      '没有视野却承担太多风险。{oppName} 读到了这波，并把防守变成反击。',
     ],
-    s6Loss: [
-      "大龙失守！敌方打野 {oJungle} 展现高超控龙技术，强顶惩戒拿下了纳什男爵大块肉点。",
-      "被堵在龙坑死角中，被敌方中单 {oMid} 极具毁灭性的光波大招倾巢之下全部融化。"
+    finalWin: [
+      '决定性团灭！{dMid} 找到最后开团，{dAdc} 完成收割，你的队伍以 {score} 结束比赛。',
+      '艰难但漂亮的胜利！大龙、同步兵线、干净执行：{oppName} 挡不住最后一波推进。',
+      '{dCoach} 的最后指挥完美。你的队伍逼出正确的 5v5 并晋级下一轮。',
+      'GG！经历多次局势反转后，你的阵容找到决定性团战并摧毁水晶。',
     ],
-    s7Win: [
-      "不可思议的团灭 (ACE)！中单 {dMid} 抓到死角打出核爆终结 ultimate，所有人屏气凝神！",
-      "神射 {dAdc} 怒斩四杀 (QUADRA KILL)！在辅助 {dSup} 舍生取义的严密贴合护航下，扫清乾坤！"
+    finalLoss: [
+      '遗憾落败。{oppName} 找到决定性团战，撕开后排并以 {score} 结束比赛。',
+      '最后一波团战出问题：大龙视野不足，{oJungle} 拿下资源，{oppName} 终结比赛。',
+      '你的队伍打得很顽强，但对手更好地惩罚了最后阶段的失误。run 到此为止。',
+      '逆转还差一点。{oppName} 顶住压力，找到关键抓单并结束系列赛。',
     ],
-    s7Loss: [
-      "阵线撕裂！敌方中单 {oMid} 找到完美侧翼切入口，一套致命刺杀连招将我方后排蒸发。",
-      "在诡谲草丛中遭遇埋伏。核心神射 {dAdc} 甚至来不及打出第一发平A便遭遇集火阵亡。"
-    ]
+  },
+};
+
+const chooseRandom = <T,>(items: T[]) => items[Math.floor(Math.random() * items.length)];
+
+const randomInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const clampNumber = (value: number, min: number, max: number) => {
+  return Math.max(min, Math.min(max, value));
+};
+
+const createFinalScoreline = (userWin: boolean, playerScore: number, opponentScore: number) => {
+  const scoreGap = playerScore - opponentScore;
+  const advantageBoost = clampNumber(Math.round(scoreGap / 8), -4, 4);
+
+  if (userWin) {
+    const kills = randomInt(17, 29) + Math.max(0, advantageBoost);
+    let deaths = randomInt(7, 18) - Math.max(0, advantageBoost);
+    deaths = clampNumber(deaths, 4, kills - 2);
+
+    return {
+      targetKills: kills,
+      targetDeaths: deaths,
+    };
   }
+
+  const deaths = randomInt(17, 30) + Math.max(0, -advantageBoost);
+  let kills = randomInt(6, 19) + Math.max(0, advantageBoost);
+  kills = clampNumber(kills, 2, deaths - 2);
+
+  return {
+    targetKills: kills,
+    targetDeaths: deaths,
+  };
+};
+
+const buildKillTimeline = (userWin: boolean, targetKills: number, targetDeaths: number): KillSnapshot[] => {
+  const pattern = chooseRandom(userWin ? WIN_PATTERNS : LOSS_PATTERNS);
+
+  const timeline = pattern.killRatio.map((killRatio, idx) => {
+    const deathRatio = pattern.deathRatio[idx];
+
+    if (idx === pattern.killRatio.length - 1) {
+      return {
+        kills: targetKills,
+        deaths: targetDeaths,
+      };
+    }
+
+    return {
+      kills: Math.round(targetKills * killRatio),
+      deaths: Math.round(targetDeaths * deathRatio),
+    };
+  });
+
+  for (let i = 0; i < timeline.length; i++) {
+    const previous = i > 0 ? timeline[i - 1] : { kills: 0, deaths: 0 };
+
+    timeline[i].kills = clampNumber(timeline[i].kills, previous.kills, targetKills);
+    timeline[i].deaths = clampNumber(timeline[i].deaths, previous.deaths, targetDeaths);
+
+    if (i > 0 && i < timeline.length - 1) {
+      if (timeline[i].kills === previous.kills && timeline[i].kills < targetKills) {
+        timeline[i].kills += 1;
+      }
+
+      if (timeline[i].deaths === previous.deaths && timeline[i].deaths < targetDeaths) {
+        timeline[i].deaths += 1;
+      }
+    }
+  }
+
+  timeline[timeline.length - 1] = {
+    kills: targetKills,
+    deaths: targetDeaths,
+  };
+
+  return timeline;
+};
+
+const getCommentaryState = (
+  index: number,
+  timeline: KillSnapshot[],
+  userWin: boolean
+): CommentaryState => {
+  if (index === 0) return 'setup';
+  if (index === timeline.length - 1) return userWin ? 'finalWin' : 'finalLoss';
+
+  const current = timeline[index];
+  const previous = timeline[index - 1];
+
+  const currentDiff = current.kills - current.deaths;
+  const previousDiff = previous.kills - previous.deaths;
+
+  if (previousDiff <= -2 && currentDiff >= 0) return 'swingToPlayer';
+  if (previousDiff >= 2 && currentDiff <= 0) return 'swingToOpponent';
+
+  if (Math.abs(currentDiff) <= 1) return 'even';
+  if (currentDiff > 1) return 'playerLead';
+  return 'opponentLead';
+};
+
+const getEventTypeFromState = (state: CommentaryState, index: number): MatchEvent['type'] => {
+  if (state === 'setup') return 'general';
+  if (state === 'playerLead') return index % 2 === 0 ? 'objective' : 'kill';
+  if (state === 'opponentLead') return index % 2 === 0 ? 'fight' : 'kill';
+  if (state === 'even') return index % 2 === 0 ? 'objective' : 'general';
+  if (state === 'swingToPlayer' || state === 'swingToOpponent') return index % 2 === 0 ? 'objective' : 'fight';
+  return 'fight';
 };
 
 export default function MatchSimulatorView({
@@ -535,8 +774,13 @@ export default function MatchSimulatorView({
 
   if (!simulator) return null;
 
-  // Compile Match Events dynamically depending on localized sets
-  const generateMatchEvents = (userWin: boolean, opp: HistoricalTeam) => {
+  // Compile match events dynamically using the generated kill timeline.
+  // Messages are selected according to the actual score state, so the commentary follows the match flow.
+  const generateMatchEvents = (
+    userWin: boolean,
+    opp: HistoricalTeam,
+    killTimeline: KillSnapshot[]
+  ): MatchEvent[] => {
     const dTop = draft.top.player?.name || 'Top';
     const dJungle = draft.jungle.player?.name || 'Jungle';
     const dMid = draft.mid.player?.name || 'Mid';
@@ -557,8 +801,9 @@ export default function MatchSimulatorView({
     const oSup = opp.roster.support.name;
 
     const oppName = opp.name;
+    const transSet = LIVE_COMMENTARY[lang] || LIVE_COMMENTARY.es;
 
-    const translateTemplate = (str: string) => {
+    const translateTemplate = (str: string, score: string) => {
       return str
         .replace(/{dTop}/g, dTop)
         .replace(/{dJungle}/g, dJungle)
@@ -576,51 +821,38 @@ export default function MatchSimulatorView({
         .replace(/{oMid}/g, oMid)
         .replace(/{oAdc}/g, oAdc)
         .replace(/{oSup}/g, oSup)
-        .replace(/{oppName}/g, oppName);
+        .replace(/{oppName}/g, oppName)
+        .replace(/{score}/g, score);
     };
 
-    const transSet = EVENT_TRANSLATIONS[lang] || EVENT_TRANSLATIONS['es'];
+    return killTimeline.map((snapshot, index) => {
+      const state = getCommentaryState(index, killTimeline, userWin);
+      const score = `${snapshot.kills}-${snapshot.deaths}`;
+      const message = translateTemplate(chooseRandom(transSet[state]), score);
 
-    const getOption = (arr: string[]) => {
-      const selected = arr[Math.floor(Math.random() * arr.length)];
-      return translateTemplate(selected);
-    };
-
-    return [
-      { time: '01:20', type: 'general' as const, message: getOption(transSet.s1) },
-      { time: '05:05', type: 'kill' as const, message: getOption(transSet.s2) },
-      { time: '10:20', type: 'objective' as const, message: getOption(transSet.s3) },
-      { time: '16:40', type: 'fight' as const, message: getOption(transSet.s4) },
-      { time: '22:15', type: 'general' as const, message: getOption(transSet.s5) },
-      { 
-        time: '28:10', 
-        type: 'objective' as const, 
-        message: userWin ? getOption(transSet.s6Win) : getOption(transSet.s6Loss) 
-      },
-      { 
-        time: '34:00', 
-        type: 'fight' as const, 
-        message: userWin ? getOption(transSet.s7Win) : getOption(transSet.s7Loss) 
-      },
-    ];
+      return {
+        time: MATCH_TIMELINE[index] || `${String(index * 4).padStart(2, '0')}:00`,
+        type: getEventTypeFromState(state, index),
+        message,
+      };
+    });
   };
 
   const handleStartMatchSimulation = () => {
     if (simulator.status !== 'pending') return;
 
-    // Run rng simulation
+    // Run RNG simulation
     const dice = Math.random() * 100;
     const isPlayerWin = dice < simulator.winChance;
 
-    const compiledEvents = generateMatchEvents(isPlayerWin, simulator.opponent);
+    const { targetKills, targetDeaths } = createFinalScoreline(
+      isPlayerWin,
+      simulator.playerScore,
+      simulator.opponentScore
+    );
 
-    const targetKills = isPlayerWin 
-      ? Math.floor(Math.random() * 11) + 15  // 15 - 25 kills
-      : Math.floor(Math.random() * 10) + 4;  // 4 - 13 kills
-      
-    const targetDeaths = isPlayerWin
-      ? Math.floor(Math.random() * 10) + 4   // 4 - 13 deaths
-      : Math.floor(Math.random() * 11) + 15; // 15 - 25 deaths
+    const killTimeline = buildKillTimeline(isPlayerWin, targetKills, targetDeaths);
+    const compiledEvents = generateMatchEvents(isPlayerWin, simulator.opponent, killTimeline);
 
     setSimulator(prev => {
       if (!prev) return null;
@@ -639,74 +871,44 @@ export default function MatchSimulatorView({
     setDisplayedEvents([]);
     setGameResultTriggered(false);
 
-    // Roll events sequence with delays
     let currentEventCursor = 0;
-    const speed = 1200; // time between alerts
+    const speed = 1300;
 
     const tick = () => {
       if (currentEventCursor < compiledEvents.length) {
         const eventToAdd = compiledEvents[currentEventCursor];
+        const scoreSnapshot = killTimeline[currentEventCursor] || killTimeline[killTimeline.length - 1];
+
         setDisplayedEvents(prev => [...prev, eventToAdd]);
+
         currentEventCursor++;
+
         setSimulator(prev => {
           if (!prev) return null;
-
-          const tk = prev.targetKills ?? targetKills;
-          const td = prev.targetDeaths ?? targetDeaths;
-          const ck = prev.currentKills ?? 0;
-          const cd = prev.currentDeaths ?? 0;
-
-          // Calculate step kills/deaths incremental values
-          let addKills = 0;
-          let addDeaths = 0;
-          
-          if (currentEventCursor === compiledEvents.length) {
-            // Guarantee final match target precisely
-            addKills = tk - ck;
-            addDeaths = td - cd;
-          } else {
-            // Incremental
-            if (currentEventCursor === 1) {
-              addKills = Math.floor(tk * 0.15);
-              addDeaths = Math.floor(td * 0.15);
-            } else if (currentEventCursor === 2) {
-              addKills = Math.floor(tk * 0.15);
-              addDeaths = Math.floor(td * 0.15);
-            } else if (currentEventCursor === 3) {
-              addKills = Math.floor(tk * 0.25);
-              addDeaths = Math.floor(td * 0.25);
-            } else if (currentEventCursor === 4) {
-              addKills = Math.floor(tk * 0.10);
-              addDeaths = Math.floor(td * 0.10);
-            } else if (currentEventCursor === 5) {
-              addKills = Math.floor(tk * 0.15);
-              addDeaths = Math.floor(td * 0.15);
-            }
-          }
 
           return {
             ...prev,
             progress: Math.round((currentEventCursor / compiledEvents.length) * 100),
-            currentKills: ck + addKills,
-            currentDeaths: cd + addDeaths,
+            currentKills: scoreSnapshot.kills,
+            currentDeaths: scoreSnapshot.deaths,
           };
         });
+
         setTimeout(tick, speed);
       } else {
-        // Conclude simulation
         setSimulator(prev => {
           if (!prev) return null;
           return {
             ...prev,
             status: isPlayerWin ? 'win' : 'loss',
-            currentKills: prev.targetKills,
-            currentDeaths: prev.targetDeaths,
+            currentKills: targetKills,
+            currentDeaths: targetDeaths,
           };
         });
+
         setIsPlayingEvents(false);
         setGameResultTriggered(true);
 
-        // Play subtle sound effects to enrich the victory / defeat moments
         if (isPlayerWin) {
           playVictorySound();
         } else {
@@ -765,7 +967,7 @@ export default function MatchSimulatorView({
 
           {/* Sinergy breakdown brief stats */}
           <div className="mt-4 p-3 bg-[#010a13]/60 border border-[#c8aa6e]/10 rounded-xl flex items-center justify-between text-xs text-[#a09b8c]">
-            <span className="font-mono text-[10px]">{lang === 'es' ? 'QUÍMICAS COMPARTIDAS:' : 'ACTIVE SYNERS:'}</span>
+            <span className="font-mono text-[10px]">{lang === 'es' ? 'QUÍMICAS COMPARTIDAS:' : 'ACTIVE SYNERGIES:'}</span>
             <span className="font-bold text-[#f0e6d2] bg-[#c8aa6e]/10 border border-[#c8aa6e]/20 px-2 py-0.5 rounded">
               +{synergyDetails.total} {lang === 'es' ? 'Química' : 'Chemistry'}
             </span>
@@ -889,7 +1091,7 @@ export default function MatchSimulatorView({
             <div className="h-full flex flex-col items-center justify-center text-center opacity-45 gap-2 select-none">
               <Swords className="w-10 h-10 text-[#c8aa6e] opacity-40" />
               <p className="text-[10px] uppercase tracking-widest text-[#a09b8c] max-w-xs leading-normal">
-                {lang === 'es' ? 'SISTEMA DE TRANSMISIONES DE LA GROP DISPONIBLE' : 'WARP SUMMON CHANNELS READY'}
+                {lang === 'es' ? 'SISTEMA DE TRANSMISIONES DE LA GRIETA DISPONIBLE' : 'WARP SUMMON CHANNELS READY'}
               </p>
               <p className="text-[9px] italic text-[#a09b8c]/80">
                 {lang === 'es' ? 'Pulsa "INICIAR PARTIDA" abajo para comenzar.' : 'Press "START MATCH" below to begin.'}
