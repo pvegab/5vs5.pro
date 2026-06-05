@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HistoricalTeam, Region } from '../types';
-import { ShieldAlert, RefreshCw, Trophy, Globe, Compass, CheckCircle } from 'lucide-react';
+import { RefreshCw, Compass, CheckCircle } from 'lucide-react';
 import { Language, TRANSLATIONS } from '../locales';
 import { playRouletteTick } from '../utils/audio';
 
@@ -27,10 +27,11 @@ export default function RouletteWheel({
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
+
     if (spinning) {
-      let speed = 40; 
+      let speed = 40;
       let elapsed = 0;
-      const duration = 2500; 
+      const duration = 2500;
 
       const tick = () => {
         setTickerIndex((prev) => (prev + 1) % teams.length);
@@ -52,6 +53,7 @@ export default function RouletteWheel({
 
       interval = setTimeout(tick, speed);
     }
+
     return () => clearTimeout(interval);
   }, [spinning, teams, onResult]);
 
@@ -80,11 +82,16 @@ export default function RouletteWheel({
 
   const getRegionFlag = (region?: Region) => {
     switch (region) {
-      case 'LCK': return 'KR 🇰🇷';
-      case 'LPL': return 'CN 🇨🇳';
-      case 'LEC': return 'EU 🇪🇺';
-      case 'LCS': return 'NA 🇺🇸';
-      default: return 'INT 🌐';
+      case 'LCK':
+        return 'KR 🇰🇷';
+      case 'LPL':
+        return 'CN 🇨🇳';
+      case 'LEC':
+        return 'EU 🇪🇺';
+      case 'LCS':
+        return 'NA 🇺🇸';
+      default:
+        return 'INT 🌐';
     }
   };
 
@@ -101,8 +108,8 @@ export default function RouletteWheel({
           </span>
         </div>
         <p className="text-xs text-[#a09b8c]">
-          {lang === 'es' 
-            ? 'Gira para invocar un equipo del mundial y selecciona a uno de sus jugadores para tu Roster' 
+          {lang === 'es'
+            ? 'Gira para invocar un equipo del mundial y selecciona a uno de sus jugadores para tu Roster'
             : activeTrans.modeNormalDesc.slice(0, 90) + '...'}
         </p>
       </div>
@@ -118,20 +125,23 @@ export default function RouletteWheel({
           activeTickTeam ? getRegionColor(activeTickTeam.region) : 'bg-[#010a13]/80 border-[#c8aa6e]/20 text-[#a09b8c]'
         }`}>
           {activeTickTeam ? (
-            <div className={`text-center transition-all duration-100 ${spinning ? 'scale-95' : 'scale-100'}`}>
+            <div className={`text-center transition-all duration-100 w-full min-w-0 ${spinning ? 'scale-95' : 'scale-100'}`}>
               <div className="flex items-center justify-center gap-2 mb-1">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#010a13]/80 border border-[#c8aa6e]/10 tracking-wider">
                   {getRegionFlag(activeTickTeam.region)}
                 </span>
                 <span className="text-[10px] font-black text-[#c8aa6e] bg-[#c8aa6e]/10 border border-[#c8aa6e]/20 px-2 py-0.5 rounded-full tracking-wider">
-                  {activeTrans.title} {activeTickTeam.year}
+                  {activeTrans.luckyTeam}
                 </span>
               </div>
-              <h3 className="text-2xl font-black text-[#f0e6d2] tracking-tight uppercase truncate font-display">
-                {activeTickTeam.name}
+
+              <h3 className="text-2xl font-black text-[#f0e6d2] tracking-tight uppercase truncate font-display flex items-baseline justify-center gap-2 min-w-0">
+                <span className="truncate">{activeTickTeam.name}</span>
+                <span className="shrink-0">{activeTickTeam.year}</span>
               </h3>
+
               <p className="text-[11px] text-[#a09b8c] font-mono tracking-widest mt-1 uppercase">
-                {activeTrans.luckyTeam}
+                {activeTrans.title}
               </p>
             </div>
           ) : (
@@ -167,12 +177,12 @@ export default function RouletteWheel({
           }`}
         >
           <RefreshCw className={`w-4 h-4 ${spinning ? 'animate-spin' : ''}`} />
-          {spinning 
-            ? activeTrans.spiningWheel 
-            : isDraftComplete 
-            ? activeTrans.completedBadge 
-            : canSpin 
-            ? activeTrans.spinBtn 
+          {spinning
+            ? activeTrans.spiningWheel
+            : isDraftComplete
+            ? activeTrans.completedBadge
+            : canSpin
+            ? activeTrans.spinBtn
             : (lang === 'es' ? 'ELIGE POSICIÓN' : 'ASSIGN PLAYER')}
         </button>
       </div>
