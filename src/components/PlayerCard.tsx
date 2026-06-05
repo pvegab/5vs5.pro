@@ -2,6 +2,36 @@ import React from 'react';
 import { Player, Region } from '../types';
 import { Shield, Swords, Sparkles, User, Crosshair, HelpCircle } from 'lucide-react';
 
+function JungleBushIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M4 17.5c.7-3.2 2.8-5.2 5.3-5.2.7-2.9 2.7-4.7 5.1-4.7 2.9 0 5 2.5 5.2 6.1 1.3.5 2.1 1.7 2.1 3.1 0 2.1-1.7 3.7-4 3.7H7.5c-2.2 0-3.8-1.2-3.5-3z"
+        fill="currentColor"
+        opacity="0.28"
+      />
+      <path
+        d="M6.4 16.8c.8-2.1 2.3-3.2 4.1-3.1.5-2.2 1.9-3.6 3.7-3.6 2.1 0 3.6 1.9 3.7 4.5 1.1.3 1.8 1.1 1.8 2.2 0 1.3-1 2.2-2.5 2.2H8.5c-1.5 0-2.5-.8-2.1-2.2z"
+        fill="currentColor"
+      />
+      <path
+        d="M9.2 13.8c-.8-1.7-.7-3.5.2-5.1M13.3 10.8c-.4-2 .1-3.7 1.5-5M16.8 14.1c.4-1.8 1.5-3 3.2-3.8"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+    </svg>
+  );
+}
+
+
 interface PlayerCardProps {
   player: Player;
   region?: Region;
@@ -36,7 +66,7 @@ export default function PlayerCard({
       case 'top':
         return <Swords className="w-4 h-4 text-[#c8aa6e]" />;
       case 'jungle':
-        return <span className="text-[15px] leading-none text-emerald-400">🪴</span>;
+        return <JungleBushIcon className="w-4 h-4 text-emerald-400" />;
       case 'mid':
         return <Sparkles className="w-4 h-4 text-purple-400" />;
       case 'adc':
