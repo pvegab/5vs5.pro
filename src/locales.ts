@@ -18,6 +18,8 @@ export interface TranslationSet {
   modeNormalDesc: string;
   modeLecHard: string;
   modeLecHardDesc: string;
+  modeLcsHard: string;
+  modeLcsHardDesc: string;
   difficulty: string;
 Portuguese: string; // fallback field if needed just in case
   diffNormal: string;
@@ -113,6 +115,8 @@ export const TRANSLATIONS: Record<Language, TranslationSet> = {
     modeNormalDesc: 'Consigue jugadores de cualquier equipo histórico del mundo. Tu objetivo es armar la sinergia ideal y ganar 6 rondas para consagrarte Campeón Mundial.',
     modeLecHard: 'Camino LEC: De Europa al Mundial (¡Difícil!)',
     modeLecHardDesc: '¡Sólo giras equipos históricos de la LEC! Supera 3 rondas intensas de Play-offs para ganar la copa de Europa, y con ese Roster exacto lánzate al Mundial para superar a los titanes hardcore de LCK/LPL.',
+    modeLcsHard: 'Camino LCS NA: De Norteamérica al Mundial (¡Difícil!)',
+    modeLcsHardDesc: 'Sólo giras equipos históricos de la LCS norteamericana. Supera 3 rondas intensas para coronarte en NA y después lleva ese mismo roster al Mundial contra los gigantes de LCK/LPL.',
     difficulty: 'Dificultad',
     Portuguese: 'Português',
     diffNormal: 'OVR Estándar',
@@ -182,6 +186,8 @@ export const TRANSLATIONS: Record<Language, TranslationSet> = {
     modeNormalDesc: 'Get players from any historical team around the world. Your goal is to map the ideal synergy and win 6 rounds to be crowned the World Champion.',
     modeLecHard: 'LEC Path: From Europe to Worlds (Hard!)',
     modeLecHardDesc: 'Draft historic European LEC teams only! Overcome 3 intense playoffs rounds to crown Europe, then carry that same squad of 6 directly to Worlds to fight scaled Asian LCK/LPL titan beasts.',
+    modeLcsHard: 'LCS NA Path: From North America to Worlds (Hard!)',
+    modeLcsHardDesc: 'Draft historic North American LCS teams only. Survive 3 regional playoff rounds, become NA champion, then take that exact roster to Worlds against LCK/LPL giants.',
     difficulty: 'Difficulty',
     Portuguese: 'Português',
     diffNormal: 'Standard Opponent OVR',
@@ -251,6 +257,8 @@ export const TRANSLATIONS: Record<Language, TranslationSet> = {
     modeNormalDesc: 'Obtenez des joueurs de n\'importe quelle équipe historique. Synergie idéale et gagner 6 matchs pour devenir Champion du Monde.',
     modeLecHard: 'Route LEC : De l\'Europe au Mondial (Difficile !)',
     modeLecHardDesc: 'Équipes de la LEC Européenne uniquement ! Gagnez d\'abord 3 matchs de playoffs LEC, puis affrontez les titans de la LCK et LPL sur-vitaminés.',
+    modeLcsHard: 'Route LCS NA : De l’Amérique du Nord au Mondial (Difficile !)',
+    modeLcsHardDesc: 'Équipes historiques de la LCS nord-américaine uniquement. Gagnez 3 tours régionaux, devenez champion NA, puis affrontez les géants LCK/LPL au Mondial.',
     difficulty: 'Difficulté',
     Portuguese: 'Português',
     diffNormal: 'Standard OVR',
@@ -320,6 +328,8 @@ export const TRANSLATIONS: Record<Language, TranslationSet> = {
     modeNormalDesc: 'Erhalte Spieler von allen historischen Weltmeistern. Dein Ziel ist es, Chemie-Boni zu maximieren und 6 Runden ungeschlagen zu überstehen.',
     modeLecHard: 'LEC Pfad: Von Europa zu Worlds (Schwer!)',
     modeLecHardDesc: 'Nur europäische LEC-Teams! Gewinne 3 packende Playoff-Runden zur LEC-Krone, und ziehe dann mit diesem Kader in die Worlds-Arena gegen extrem aggressive LCK/LPL-Giganten.',
+    modeLcsHard: 'LCS-NA-Pfad: Von Nordamerika zu Worlds (Schwer!)',
+    modeLcsHardDesc: 'Nur historische nordamerikanische LCS-Teams. Gewinne 3 regionale Playoff-Runden, werde NA-Champion und kämpfe danach bei Worlds gegen LCK/LPL-Giganten.',
     difficulty: 'Schwierigkeit',
     Portuguese: 'Português',
     diffNormal: 'Standard-Rivalen',
@@ -389,6 +399,8 @@ export const TRANSLATIONS: Record<Language, TranslationSet> = {
     modeNormalDesc: 'Ottieni campioni da qualsiasi formazione storica mondiale. Il tuo obiettivo è dominare la sinergia e superare 6 incontri per aggiudicarti la Coppa del Mondo.',
     modeLecHard: 'Cammino LEC: Dal Trionfo Europeo ai Worlds (Difficile!)',
     modeLecHardDesc: 'Solo dinastie della LEC europea! Domina 3 turni di playoff per incoronarti campione d\'Europa, poi scendi nell\'arena di Worlds contro i potenti della LCK/LPL con bonus di difficoltà +OVR.',
+    modeLcsHard: 'Cammino LCS NA: Dal Nord America ai Worlds (Difficile!)',
+    modeLcsHardDesc: 'Solo squadre storiche della LCS nordamericana. Supera 3 turni regionali, diventa campione NA e porta quel roster ai Worlds contro i giganti LCK/LPL.',
     difficulty: 'Difficoltà',
     Portuguese: 'Português',
     diffNormal: 'OVR Avversario Standard',
@@ -459,6 +471,8 @@ Portuguese: 'Português',
     modeNormalDesc: 'Garanta jogadores de qualquer franquia clássica. O seu objetivo é extrair o máximo de química e vencer 6 rodadas para conquistar a Taça Mundial.',
     modeLecHard: 'Caminho LEC: Da Europa ao Mundial (Feroz!)',
     modeLecHardDesc: 'Apenas equipes clássicas da LEC europeia! Derrote 3 séries de playoffs intensas para conquistar a taça europeia, e leve essa exata escalação para os Worlds contra as feras de LCK/LPL.',
+    modeLcsHard: 'Caminho LCS NA: Da América do Norte ao Mundial (Difícil!)',
+    modeLcsHardDesc: 'Apenas equipas históricas da LCS norte-americana. Vence 3 rondas regionais, torna-te campeão NA e leva esse roster aos Worlds contra gigantes LCK/LPL.',
     difficulty: 'Dificuldade',
     diffNormal: 'OVR Base',
     diffHard: 'Status Melhorado (+OVR Difícil)',
@@ -527,6 +541,8 @@ Portuguese: 'Português',
     modeNormalDesc: 'Собирайте легендарных игроков из любых исторических составов мира. Ваша цель — создать лучшую синергию и победить в 6 раундах.',
     modeLecHard: 'Путь LEC: Из Европы на Чемпионат Мира (Сложно!)',
     modeLecHardDesc: 'Только европейские команды LEC! Сначала выиграйте 3 раунда плей-офф LEC, чтобы доминировать в Европе, а затем с этим же ростером бейтесь против азиатских титанов LCK/LPL.',
+    modeLcsHard: 'Путь LCS NA: из Северной Америки на Worlds (Сложно!)',
+    modeLcsHardDesc: 'Только исторические команды североамериканской LCS. Пройдите 3 региональных раунда, станьте чемпионом NA и затем сразитесь с гигантами LCK/LPL.',
     difficulty: 'Сложность',
     Portuguese: 'Português',
     diffNormal: 'Стандартный OVR соперников',
@@ -596,6 +612,8 @@ Portuguese: 'Português',
     modeNormalDesc: '전 세계의 모든 역사적 월드팀 선수들을 룰렛으로 자유롭게 획득할 수 있습니다. 6번 승리하여 소환사 컵을 거머쥐세요.',
     modeLecHard: 'LEC 대장정: 유럽에서 롤드컵 제패까지 (어려움!)',
     modeLecHardDesc: '유럽의 오리지널 LEC 역사적 팀들의 정수들만 등장! 전승으로 3라운드의 LEC 포스트시즌을 이겨 유럽 최강이 되고, 가중치가 부여된 LCK/LPL 올스타에 맞서 세상을 지배해 보세요.',
+    modeLcsHard: 'LCS NA 루트: 북미에서 월즈까지 (어려움!)',
+    modeLcsHardDesc: '북미 LCS 역사적 팀만 등장합니다. 3개의 지역 플레이오프 라운드를 넘어 NA 챔피언이 된 뒤, 같은 로스터로 LCK/LPL 거함들과 월즈에서 맞붙습니다.',
     difficulty: '난이도 설정',
     Portuguese: 'Português',
     diffNormal: '기본 상대 오버롤',
@@ -665,6 +683,8 @@ Portuguese: 'Português',
     modeNormalDesc: '不受限制！转动轮盘收集全球任何年代的殿堂级战队。只要拿下6轮全胜，即可把大名永久写入总冠军名单。',
     modeLecHard: 'LEC欧洲自强不息之路：从欧洲之王到世界之巅 (硬核极难！)',
     modeLecHardDesc: '只允许自传轮盘抽取欧洲LEC历史经典战队！挺过3轮惨烈的LEC季后赛捧取银龙杯，再带着此套班底共同远征世界赛突击高OVR加成过的亚洲LCK/LPL天花板巨轮。',
+    modeLcsHard: 'LCS NA 路线：从北美走向全球总决赛（困难！）',
+    modeLcsHardDesc: '只抽取北美 LCS 历史队伍。先通过 3 轮地区季后赛成为 NA 冠军，再带着同一套阵容去全球总决赛挑战 LCK/LPL 巨人。',
     difficulty: '硬核指数',
     Portuguese: 'Português',
     diffNormal: '对方常规战力',
@@ -723,218 +743,110 @@ Portuguese: 'Português',
   },
 };
 
-export const getLocalizedRoundName = (roundIndex: number, mode: 'normal' | 'lecHard', lang: Language): string => {
-  const roundMaps: Record<Language, { normal: string[]; lecHard: string[] }> = {
+export const getLocalizedRoundName = (roundIndex: number, mode: 'normal' | 'lecHard' | 'lcsHard', lang: Language): string => {
+  const roundMaps: Record<Language, { normal: string[]; lecHard: string[]; lcsHard: string[] }> = {
     es: {
-      normal: [
-        'Ronda de Apertura (1/6)',
-        'Fase de Clasificación (2/6)',
-        'Última Decisión Suiza (3/6)',
-        'Cuartos del Mundial (4/6)',
-        'Semifinal del Mundial (5/6)',
-        'Gran Final del Mundial (6/6)',
-      ],
-      lecHard: [
-        'Cuartos de Final LEC (1/6)',
-        'Semifinales de LEC (2/6)',
-        'Gran Final de LEC 🏆 (3/6)',
-        'Mundial: Decisión Suiza (4/6)',
-        'Mundial: Semifinales (5/6)',
-        'Mundial: Gran Final (6/6)',
-      ],
+      normal: ['Ronda de Apertura (1/6)', 'Fase de Clasificación (2/6)', 'Última Decisión Suiza (3/6)', 'Cuartos del Mundial (4/6)', 'Semifinal del Mundial (5/6)', 'Gran Final del Mundial (6/6)'],
+      lecHard: ['Cuartos de Final LEC (1/6)', 'Semifinales de LEC (2/6)', 'Gran Final de LEC 🏆 (3/6)', 'Mundial: Decisión Suiza (4/6)', 'Mundial: Semifinales (5/6)', 'Mundial: Gran Final (6/6)'],
+      lcsHard: ['Cuartos de Final LCS NA (1/6)', 'Semifinales de LCS NA (2/6)', 'Gran Final de LCS NA 🏆 (3/6)', 'Mundial: Decisión Suiza (4/6)', 'Mundial: Semifinales (5/6)', 'Mundial: Gran Final (6/6)'],
     },
     en: {
-      normal: [
-        'Worlds Opening Match (1/6)',
-        'Worlds Swiss Phase (2/6)',
-        'Swiss Survival round (3/6)',
-        'Worlds Quarterfinals (4/6)',
-        'Worlds Semifinal (5/6)',
-        'Worlds Grand Final (6/6)',
-      ],
-      lecHard: [
-        'LEC Quarterfinals (1/6)',
-        'LEC Semifinals (2/6)',
-        'LEC Grand Final 🏆 (3/6)',
-        'Worlds Swiss Stage (4/6)',
-        'Worlds Semifinals (5/6)',
-        'Worlds Grand Final (6/6)',
-      ],
+      normal: ['Worlds Opening Match (1/6)', 'Worlds Swiss Phase (2/6)', 'Swiss Survival Round (3/6)', 'Worlds Quarterfinals (4/6)', 'Worlds Semifinal (5/6)', 'Worlds Grand Final (6/6)'],
+      lecHard: ['LEC Quarterfinals (1/6)', 'LEC Semifinals (2/6)', 'LEC Grand Final 🏆 (3/6)', 'Worlds Swiss Stage (4/6)', 'Worlds Semifinals (5/6)', 'Worlds Grand Final (6/6)'],
+      lcsHard: ['LCS NA Quarterfinals (1/6)', 'LCS NA Semifinals (2/6)', 'LCS NA Grand Final 🏆 (3/6)', 'Worlds Swiss Stage (4/6)', 'Worlds Semifinals (5/6)', 'Worlds Grand Final (6/6)'],
     },
     fr: {
-      normal: [
-        'Qualifs d\'Ouverture (1/6)',
-        'Fase Suisse (2/6)',
-        'Match décisif Suisse (3/6)',
-        'Quarts de Finale (4/6)',
-        'Demi-finale Mondiale (5/6)',
-        'Grande Finale Mondiale (6/6)',
-      ],
-      lecHard: [
-        'Quart de finale LEC (1/6)',
-        'Demi-finale LEC (2/6)',
-        'Grande Finale LEC 🏆 (3/6)',
-        'Phase Suisse Mondiale (4/6)',
-        'Demi-finale Mondiale (5/6)',
-        'Grande Finale Mondiale (6/6)',
-      ],
+      normal: ['Qualifs d\'Ouverture (1/6)', 'Phase Suisse (2/6)', 'Match décisif Suisse (3/6)', 'Quarts de Finale (4/6)', 'Demi-finale Mondiale (5/6)', 'Grande Finale Mondiale (6/6)'],
+      lecHard: ['Quart de finale LEC (1/6)', 'Demi-finale LEC (2/6)', 'Grande Finale LEC 🏆 (3/6)', 'Phase Suisse Mondiale (4/6)', 'Demi-finale Mondiale (5/6)', 'Grande Finale Mondiale (6/6)'],
+      lcsHard: ['Quart de finale LCS NA (1/6)', 'Demi-finale LCS NA (2/6)', 'Grande Finale LCS NA 🏆 (3/6)', 'Phase Suisse Mondiale (4/6)', 'Demi-finale Mondiale (5/6)', 'Grande Finale Mondiale (6/6)'],
     },
     de: {
-      normal: [
-        'Eröffnungsspiel (1/6)',
-        'Schweizer Runde 1 (2/6)',
-        'Entscheidungsspiel (3/6)',
-        'Worlds Viertelfinale (4/6)',
-        'Worlds Halbfinale (5/6)',
-        'Großes Finale (6/6)',
-      ],
-      lecHard: [
-        'LEC Viertelfinale (1/6)',
-        'LEC Halbfinale (2/6)',
-        'LEC Großes Finale 🏆 (3/6)',
-        'Worlds Schweizer Phase (4/6)',
-        'Worlds Halbfinale (5/6)',
-        'Worlds Großes Weltfinale (6/6)',
-      ],
+      normal: ['Eröffnungsspiel (1/6)', 'Schweizer Runde 1 (2/6)', 'Entscheidungsspiel (3/6)', 'Worlds Viertelfinale (4/6)', 'Worlds Halbfinale (5/6)', 'Großes Finale (6/6)'],
+      lecHard: ['LEC Viertelfinale (1/6)', 'LEC Halbfinale (2/6)', 'LEC Großes Finale 🏆 (3/6)', 'Worlds Schweizer Phase (4/6)', 'Worlds Halbfinale (5/6)', 'Worlds Großes Weltfinale (6/6)'],
+      lcsHard: ['LCS NA Viertelfinale (1/6)', 'LCS NA Halbfinale (2/6)', 'LCS NA Großes Finale 🏆 (3/6)', 'Worlds Schweizer Phase (4/6)', 'Worlds Halbfinale (5/6)', 'Worlds Großes Weltfinale (6/6)'],
     },
     it: {
-      normal: [
-        'Gara d\'Apertura (1/6)',
-        'Fase Svizzera (2/6)',
-        'Decisiva Svizzera (3/6)',
-        'Quarti del Mondiale (4/6)',
-        'Semifinale Mondiale (5/6)',
-        'Gran Finale Mondiale (6/6)',
-      ],
-      lecHard: [
-        'Quarti di Finale LEC (1/6)',
-        'Semifinali LEC (2/6)',
-        'Gran Finale LEC 🏆 (3/6)',
-        'Worlds Fase Svizzera (4/6)',
-        'Worlds Semifinali (5/6)',
-        'Worlds Gran Finale (6/6)',
-      ],
+      normal: ['Gara d\'Apertura (1/6)', 'Fase Svizzera (2/6)', 'Decisiva Svizzera (3/6)', 'Quarti del Mondiale (4/6)', 'Semifinale Mondiale (5/6)', 'Gran Finale Mondiale (6/6)'],
+      lecHard: ['Quarti di Finale LEC (1/6)', 'Semifinali LEC (2/6)', 'Gran Finale LEC 🏆 (3/6)', 'Worlds Fase Svizzera (4/6)', 'Worlds Semifinali (5/6)', 'Worlds Gran Finale (6/6)'],
+      lcsHard: ['Quarti di Finale LCS NA (1/6)', 'Semifinali LCS NA (2/6)', 'Gran Finale LCS NA 🏆 (3/6)', 'Worlds Fase Svizzera (4/6)', 'Worlds Semifinali (5/6)', 'Worlds Gran Finale (6/6)'],
     },
     pt: {
-      normal: [
-        'Partida de Abertura (1/6)',
-        'Fase Suíça (2/6)',
-        'Decisiva Suíça (3/6)',
-        'Quartas do Mundial (4/6)',
-        'Semifinal do Mundial (5/6)',
-        'Grande Final Mundial (6/6)',
-      ],
-      lecHard: [
-        'Quartas de Final LEC (1/6)',
-        'Semifinais da LEC (2/6)',
-        'Grande Final da LEC 🏆 (3/6)',
-        'Worlds Fase Suíça (4/6)',
-        'Worlds Semifinal (5/6)',
-        'Worlds Grande Final (6/6)',
-      ],
+      normal: ['Partida de Abertura (1/6)', 'Fase Suíça (2/6)', 'Decisiva Suíça (3/6)', 'Quartas do Mundial (4/6)', 'Semifinal do Mundial (5/6)', 'Grande Final Mundial (6/6)'],
+      lecHard: ['Quartas de Final LEC (1/6)', 'Semifinais da LEC (2/6)', 'Grande Final da LEC 🏆 (3/6)', 'Worlds Fase Suíça (4/6)', 'Worlds Semifinal (5/6)', 'Worlds Grande Final (6/6)'],
+      lcsHard: ['Quartas de Final LCS NA (1/6)', 'Semifinais da LCS NA (2/6)', 'Grande Final da LCS NA 🏆 (3/6)', 'Worlds Fase Suíça (4/6)', 'Worlds Semifinal (5/6)', 'Worlds Grande Final (6/6)'],
     },
     ru: {
-      normal: [
-        'Матч открытия (1/6)',
-        'Швейцарка - Начало (2/6)',
-        'Решающая швейцарка (3/6)',
-        'Четвертьфинал мира (4/6)',
-        'Полуфинал мира (5/6)',
-        'Гранд-финал мира (6/6)',
-      ],
-      lecHard: [
-        'Четвертьфинал LEC (1/6)',
-        'Полуфинал LEC (2/6)',
-        'Гранд-финал LEC 🏆 (3/6)',
-        'Швейцарка Worlds (4/6)',
-        'Полуфинал Worlds (5/6)',
-        'Гранд-финал Worlds (6/6)',
-      ],
+      normal: ['Матч открытия (1/6)', 'Швейцарка - Начало (2/6)', 'Решающая швейцарка (3/6)', 'Четвертьфинал мира (4/6)', 'Полуфинал мира (5/6)', 'Гранд-финал мира (6/6)'],
+      lecHard: ['Четвертьфинал LEC (1/6)', 'Полуфинал LEC (2/6)', 'Гранд-финал LEC 🏆 (3/6)', 'Швейцарка Worlds (4/6)', 'Полуфинал Worlds (5/6)', 'Гранд-финал Worlds (6/6)'],
+      lcsHard: ['Четвертьфинал LCS NA (1/6)', 'Полуфинал LCS NA (2/6)', 'Гранд-финал LCS NA 🏆 (3/6)', 'Швейцарка Worlds (4/6)', 'Полуфинал Worlds (5/6)', 'Гранд-финал Worlds (6/6)'],
     },
     ko: {
-      normal: [
-        '오프닝 플레이오프 (1/6)',
-        '본선 스위스 결전 (2/6)',
-        '최종 수성 스위스 (3/6)',
-        '롤드컵 8강 본선 (4/6)',
-        '롤드컵 4강 준결승 (5/6)',
-        '롤드컵 결승전 챔피언십 (6/6)',
-      ],
-      lecHard: [
-        'LEC 8강전 (1/6)',
-        'LEC 4강전 (2/6)',
-        'LEC 파이널 결승전 🏆 (3/6)',
-        '롤드컵 본선 스위스 (4/6)',
-        '롤드컵 4강 준결승 (5/6)',
-        '롤드컵 결승전 챔피언십 (6/6)',
-      ],
+      normal: ['오프닝 플레이오프 (1/6)', '본선 스위스 결전 (2/6)', '최종 수성 스위스 (3/6)', '롤드컵 8강 본선 (4/6)', '롤드컵 4강 준결승 (5/6)', '롤드컵 결승전 챔피언십 (6/6)'],
+      lecHard: ['LEC 8강전 (1/6)', 'LEC 4강전 (2/6)', 'LEC 파이널 결승전 🏆 (3/6)', '롤드컵 본선 스위스 (4/6)', '롤드컵 4강 준결승 (5/6)', '롤드컵 결승전 챔피언십 (6/6)'],
+      lcsHard: ['LCS NA 8강전 (1/6)', 'LCS NA 4강전 (2/6)', 'LCS NA 파이널 🏆 (3/6)', '롤드컵 본선 스위스 (4/6)', '롤드컵 4강 준결승 (5/6)', '롤드컵 결승전 챔피언십 (6/6)'],
     },
     zh: {
-      normal: [
-        '资格赛揭幕战 (1/6)',
-        '世界赛瑞士轮首段 (2/6)',
-        '瑞士轮生存死斗 (3/6)',
-        '全球总决赛8강战 (4/6)',
-        '全球总决赛半决赛 (5/6)',
-        '全球总决赛总决赛 (6/6)',
-      ],
-      lecHard: [
-        'LEC 季后赛首轮 (1/6)',
-        'LEC 季后赛半决战 (2/6)',
-        'LEC 季后赛总决赛 🏆 (3/6)',
-        '世界赛瑞士轮 (4/6)',
-        '全球总决赛半决赛 (5/6)',
-        '全球总决赛冠亚军决战 (6/6)',
-      ],
+      normal: ['资格赛揭幕战 (1/6)', '世界赛瑞士轮首段 (2/6)', '瑞士轮生存死斗 (3/6)', '全球总决赛8强战 (4/6)', '全球总决赛半决赛 (5/6)', '全球总决赛总决赛 (6/6)'],
+      lecHard: ['LEC 季后赛首轮 (1/6)', 'LEC 季后赛半决战 (2/6)', 'LEC 季后赛总决赛 🏆 (3/6)', '世界赛瑞士轮 (4/6)', '全球总决赛半决赛 (5/6)', '全球总决赛冠亚军决战 (6/6)'],
+      lcsHard: ['LCS NA 季后赛首轮 (1/6)', 'LCS NA 季后赛半决战 (2/6)', 'LCS NA 季后赛总决赛 🏆 (3/6)', '世界赛瑞士轮 (4/6)', '全球总决赛半决赛 (5/6)', '全球总决赛冠亚军决战 (6/6)'],
     },
   };
 
-  const setOfLang = roundMaps[lang] || roundMaps['es'];
-  const modeKey = mode === 'lecHard' ? 'lecHard' : 'normal';
+  const setOfLang = roundMaps[lang] || roundMaps.es;
+  const modeKey = mode === 'lecHard' ? 'lecHard' : mode === 'lcsHard' ? 'lcsHard' : 'normal';
   return setOfLang[modeKey][roundIndex] || `Round ${roundIndex + 1}`;
 };
 
-export const getLocalizedShortRoundName = (roundIndex: number, mode: 'normal' | 'lecHard', lang: Language): string => {
-  const shortNames: Record<Language, { normal: string[]; lecHard: string[] }> = {
+export const getLocalizedShortRoundName = (roundIndex: number, mode: 'normal' | 'lecHard' | 'lcsHard', lang: Language): string => {
+  const shortNames: Record<Language, { normal: string[]; lecHard: string[]; lcsHard: string[] }> = {
     es: {
       normal: ['Apertura', 'Suiza R2', 'Suiza R3', 'Cuartos', 'Semifinales', 'Gran Final'],
-      lecHard: ['Cuartos LEC', 'Semis LEC', 'Gran Final LEC 🎉', 'Suiza Worlds', 'Semis Worlds', 'Gran Final Worlds 🏆']
+      lecHard: ['Cuartos LEC', 'Semis LEC', 'Final LEC 🎉', 'Suiza Worlds', 'Semis Worlds', 'Gran Final Worlds 🏆'],
+      lcsHard: ['Cuartos LCS', 'Semis LCS', 'Final LCS 🎉', 'Suiza Worlds', 'Semis Worlds', 'Gran Final Worlds 🏆'],
     },
     en: {
       normal: ['Opening', 'Swiss R2', 'Swiss R3', 'Quarters', 'Semifinals', 'Grand Final'],
-      lecHard: ['Quarters LEC', 'Semis LEC', 'LEC Final 🎉', 'Worlds Swiss', 'Worlds Semis', 'Worlds Final 🏆']
-    },
-    de: {
-      normal: ['Eröffnung', 'Schweiz R2', 'Schweiz R3', 'Viertelfinale', 'Halbfinale', 'Großes Finale'],
-      lecHard: ['Viertelfinale LEC', 'Halbfinale LEC', 'LEC Finale 🎉', 'Schweiz Worlds', 'Halbfinale Worlds', 'Großes Finale Worlds 🏆']
+      lecHard: ['LEC Quarters', 'LEC Semis', 'LEC Final 🎉', 'Worlds Swiss', 'Worlds Semis', 'Worlds Final 🏆'],
+      lcsHard: ['LCS Quarters', 'LCS Semis', 'LCS Final 🎉', 'Worlds Swiss', 'Worlds Semis', 'Worlds Final 🏆'],
     },
     fr: {
       normal: ['Ouverture', 'Suisse R2', 'Suisse R3', 'Quarts', 'Demi-finales', 'Grande Finale'],
-      lecHard: ['Quarts LEC', 'Semis LEC', 'Finale LEC 🎉', 'Suisse Worlds', 'Semis Worlds', 'Finale Worlds 🏆']
+      lecHard: ['Quarts LEC', 'Semis LEC', 'Finale LEC 🎉', 'Suisse Worlds', 'Semis Worlds', 'Finale Worlds 🏆'],
+      lcsHard: ['Quarts LCS', 'Semis LCS', 'Finale LCS 🎉', 'Suisse Worlds', 'Semis Worlds', 'Finale Worlds 🏆'],
+    },
+    de: {
+      normal: ['Eröffnung', 'Schweiz R2', 'Schweiz R3', 'Viertelfinale', 'Halbfinale', 'Großes Finale'],
+      lecHard: ['LEC Viertel', 'LEC Halbfinale', 'LEC Finale 🎉', 'Worlds Schweiz', 'Worlds Halbfinale', 'Worlds Finale 🏆'],
+      lcsHard: ['LCS Viertel', 'LCS Halbfinale', 'LCS Finale 🎉', 'Worlds Schweiz', 'Worlds Halbfinale', 'Worlds Finale 🏆'],
     },
     it: {
       normal: ['Apertura', 'Svizzera R2', 'Svizzera R3', 'Quarti', 'Semifinali', 'Gran Finale'],
-      lecHard: ['Quarti LEC', 'Semis LEC', 'Finale LEC 🎉', 'Svizzera Worlds', 'Semis Worlds', 'Finale Worlds 🏆']
+      lecHard: ['Quarti LEC', 'Semis LEC', 'Finale LEC 🎉', 'Svizzera Worlds', 'Semis Worlds', 'Finale Worlds 🏆'],
+      lcsHard: ['Quarti LCS', 'Semis LCS', 'Finale LCS 🎉', 'Svizzera Worlds', 'Semis Worlds', 'Finale Worlds 🏆'],
     },
     pt: {
       normal: ['Abertura', 'Suiça R2', 'Suiça R3', 'Quartas', 'Semifinais', 'Grande Final'],
-      lecHard: ['Quartas LEC', 'Semis LEC', 'Final LEC 🎉', 'Suiça Worlds', 'Semis Worlds', 'Grande Final Worlds 🏆']
+      lecHard: ['Quartas LEC', 'Semis LEC', 'Final LEC 🎉', 'Suiça Worlds', 'Semis Worlds', 'Grande Final Worlds 🏆'],
+      lcsHard: ['Quartas LCS', 'Semis LCS', 'Final LCS 🎉', 'Suiça Worlds', 'Semis Worlds', 'Grande Final Worlds 🏆'],
     },
     ru: {
       normal: ['Матч откр.', 'Швейц. R2', 'Швейц. R3', 'Четвертьфинал', 'Полуфинал', 'Гранд-финал'],
-      lecHard: ['Четвертьфинал LEC', 'Полуфинал LEC', 'Финал LEC 🎉', 'Швейцарская Worlds', 'Полуфинал Worlds', 'Гранд-финал Worlds 🏆']
+      lecHard: ['Четвертьфинал LEC', 'Полуфинал LEC', 'Финал LEC 🎉', 'Швейцарская Worlds', 'Полуфинал Worlds', 'Гранд-финал Worlds 🏆'],
+      lcsHard: ['Четвертьфинал LCS', 'Полуфинал LCS', 'Финал LCS 🎉', 'Швейцарская Worlds', 'Полуфинал Worlds', 'Гранд-финал Worlds 🏆'],
     },
     ko: {
       normal: ['오프닝', '스위스 2R', '스위스 3R', '8강전', '4강전', '결승전'],
-      lecHard: ['LEC 8강', 'LEC 4강', 'LEC 결승 🎉', '롤드컵 스위스', '롤드컵 준결승', '롤드컵 결승전 🏆']
+      lecHard: ['LEC 8강', 'LEC 4강', 'LEC 결승 🎉', '롤드컵 스위스', '롤드컵 준결승', '롤드컵 결승전 🏆'],
+      lcsHard: ['LCS 8강', 'LCS 4강', 'LCS 결승 🎉', '롤드컵 스위스', '롤드컵 준결승', '롤드컵 결승전 🏆'],
     },
     zh: {
       normal: ['揭幕战', '瑞士轮R2', '瑞士轮R3', '世界赛8强', '世界赛半决赛', '世界赛总决赛'],
-      lecHard: ['LEC 8强', 'LEC 4强', 'LEC总决赛 🎉', '世界赛瑞士轮', '世界赛半决赛', '世界赛总决赛 🏆']
-    }
+      lecHard: ['LEC 8强', 'LEC 4强', 'LEC总决赛 🎉', '世界赛瑞士轮', '世界赛半决赛', '世界赛总决赛 🏆'],
+      lcsHard: ['LCS 8强', 'LCS 4强', 'LCS总决赛 🎉', '世界赛瑞士轮', '世界赛半决赛', '世界赛总决赛 🏆'],
+    },
   };
 
-  const setOfLang = shortNames[lang] || shortNames['es'];
-  const modeKey = mode === 'lecHard' ? 'lecHard' : 'normal';
+  const setOfLang = shortNames[lang] || shortNames.es;
+  const modeKey = mode === 'lecHard' ? 'lecHard' : mode === 'lcsHard' ? 'lcsHard' : 'normal';
   return setOfLang[modeKey][roundIndex] || `R${roundIndex + 1}`;
 };
