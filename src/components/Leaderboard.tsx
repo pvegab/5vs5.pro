@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Trophy } from 'lucide-react';
 import { Language } from '../locales';
+import { GameMode } from '../types';
 
 interface LeaderboardEntry {
   id?: number;
@@ -12,7 +13,7 @@ interface LeaderboardEntry {
   kills: number;
   deaths: number;
   score: number;
-  gameMode: 'normal' | 'lecHard';
+  gameMode: GameMode;
   ovr: number;
   date: string;
 }
@@ -23,7 +24,7 @@ interface LeaderboardProps {
   totalKills: number;
   totalDeaths: number;
   teamOvr: number;
-  gameMode: 'normal' | 'lecHard';
+  gameMode: GameMode;
   lang?: Language;
 }
 
@@ -57,6 +58,8 @@ type TextSet = {
   loading: string;
   empty: string;
   hard: string;
+  hardLec: string;
+  hardLcs: string;
   normal: string;
   saveError: string;
   positionError: string;
@@ -89,6 +92,8 @@ const ES: TextSet = {
   loading: 'Cargando ranking global...',
   empty: 'Todavía no hay resultados guardados.',
   hard: 'DIFÍCIL',
+  hardLec: 'LEC DIFÍCIL',
+  hardLcs: 'LCS NA DIFÍCIL',
   normal: 'NORMAL',
   saveError: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
   positionError: 'Resultado guardado, pero no se pudo cargar tu posición. Revisa el endpoint /around en el backend.',
@@ -119,6 +124,8 @@ const EN: TextSet = {
   loading: 'Loading global leaderboard...',
   empty: 'No saved results yet.',
   hard: 'HARD',
+  hardLec: 'LEC HARD',
+  hardLcs: 'LCS NA HARD',
   normal: 'NORMAL',
   saveError: 'Could not save the result. Please try again.',
   positionError: 'Result saved, but your nearby ranking could not be loaded. Check the backend /around endpoint.',
@@ -212,8 +219,20 @@ export default function Leaderboard({
   );
 
   const baselineScore = (winsCount * 1200) + (totalKills * 25) - (totalDeaths * 15) + (teamOvr * 10);
-  const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'lecHard' ? 1.5 : 1.0)));
+  const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'normal' ? 1.0 : 1.5)));
   const recordString = `${winsCount}W-${lossesCount}L`;
+
+  const getModeLabel = (mode: GameMode) => {
+    if (mode === 'lecHard') return t.hardLec;
+    if (mode === 'lcsHard') return t.hardLcs;
+    return t.normal;
+  };
+
+  const getModeBadgeClass = (mode: GameMode) => {
+    if (mode === 'lecHard') return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+    if (mode === 'lcsHard') return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+    return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+  };
 
   const loadTopLeaderboard = async () => {
     try {
@@ -473,12 +492,8 @@ export default function Leaderboard({
                         <td className="py-3 px-4 text-center font-black text-rose-350/80">{entry.ovr}</td>
 
                         <td className="py-3 px-4 text-center text-[10px]">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                            entry.gameMode === 'lecHard'
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                              : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                          }`}>
-                            {entry.gameMode === 'lecHard' ? t.hard : t.normal}
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${getModeBadgeClass(entry.gameMode)}`}>
+                            {getModeLabel(entry.gameMode)}
                           </span>
                         </td>
 
