@@ -92,9 +92,9 @@ const ES: TextSet = {
   loading: 'Cargando ranking global...',
   empty: 'Todavía no hay resultados guardados.',
   hard: 'DIFÍCIL',
-  hardLec: 'LEC HARD',
-  hardLcs: 'LCS NA HARD',
-  normal: 'WORLDS',
+  hardLec: 'LEC',
+  hardLcs: 'LCS',
+  normal: 'Worlds',
   saveError: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
   positionError: 'Resultado guardado, pero no se pudo cargar tu posición. Revisa el endpoint /around en el backend.',
   you: 'TÚ',
@@ -124,9 +124,9 @@ const EN: TextSet = {
   loading: 'Loading global leaderboard...',
   empty: 'No saved results yet.',
   hard: 'HARD',
-  hardLec: 'LEC HARD',
-  hardLcs: 'LCS NA HARD',
-  normal: 'WORLDS',
+  hardLec: 'LEC',
+  hardLcs: 'LCS',
+  normal: 'Worlds',
   saveError: 'Could not save the result. Please try again.',
   positionError: 'Result saved, but your nearby ranking could not be loaded. Check the backend /around endpoint.',
   you: 'YOU',
@@ -262,9 +262,27 @@ const COUNTRIES: Country[] = [
   { code: 'ZA', flag: '🇿🇦', names: names('Sudáfrica', 'South Africa') },
 ];
 
+const COUNTRY_CODE_ALIASES: Record<string, string> = {
+  USA: 'US',
+  EEUU: 'US',
+  UK: 'GB',
+  ENG: 'GB',
+  ENGLAND: 'GB',
+  KOREA: 'KR',
+  SOUTH_KOREA: 'KR',
+  TAIWAN: 'TW',
+};
+
 const getFlagByCountryCode = (countryCode?: string) => {
-  const normalizedCode = (countryCode || '').trim().toUpperCase();
+  const rawCode = (countryCode || '').trim().toUpperCase();
+  const normalizedCode = COUNTRY_CODE_ALIASES[rawCode] || rawCode;
   return COUNTRIES.find(country => country.code === normalizedCode)?.flag || '🏳️';
+};
+
+const getEntryFlag = (entry: Pick<LeaderboardEntry, 'countryCode' | 'flag'>) => {
+  const countryFlag = getFlagByCountryCode(entry.countryCode);
+  if (countryFlag !== '🏳️') return countryFlag;
+  return entry.flag || '🏳️';
 };
 
 const getCountryName = (country: Country, lang: Language) => {
@@ -315,9 +333,9 @@ export default function Leaderboard({
 
   const getModeBadgeClass = (mode: GameMode | string) => {
     const normalizedMode = normalizeMode(mode);
-    if (normalizedMode === 'lecHard') return 'bg-red-500/15 text-red-300 border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.12)]';
-    if (normalizedMode === 'lcsHard') return 'bg-red-700/20 text-red-200 border border-red-500/45 shadow-[0_0_10px_rgba(239,68,68,0.12)]';
-    return 'bg-amber-400/15 text-amber-300 border border-amber-400/45 shadow-[0_0_10px_rgba(251,191,36,0.12)]';
+    if (normalizedMode === 'lecHard') return 'bg-red-500/15 text-red-300 border border-red-500/45 shadow-[0_0_10px_rgba(239,68,68,0.14)]';
+    if (normalizedMode === 'lcsHard') return 'bg-red-500/15 text-red-300 border border-red-500/45 shadow-[0_0_10px_rgba(239,68,68,0.14)]';
+    return 'bg-amber-400/15 text-amber-300 border border-amber-400/45 shadow-[0_0_10px_rgba(251,191,36,0.14)]';
   };
 
   const loadTopLeaderboard = async () => {
@@ -560,7 +578,7 @@ export default function Leaderboard({
                         </td>
 
                         <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[170px] truncate">
-                          <span className="mr-2" title={entry.countryCode}>{getFlagByCountryCode(entry.countryCode)}</span>
+                          <span className="mr-2" title={entry.countryCode || entry.flag}>{getEntryFlag(entry)}</span>
                           <span>{entry.name}</span>
                           {isCurrentUser && (
                             <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-400 text-[8px] font-black uppercase">{t.you}</span>
@@ -578,7 +596,7 @@ export default function Leaderboard({
                         <td className="py-3 px-4 text-center font-black text-rose-350/80">{entry.ovr}</td>
 
                         <td className="py-3 px-4 text-center text-[10px]">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${getModeBadgeClass(entry.gameMode)}`}>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black tracking-wider ${getModeBadgeClass(entry.gameMode)}`}>
                             {getModeLabel(entry.gameMode)}
                           </span>
                         </td>
