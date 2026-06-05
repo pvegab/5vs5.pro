@@ -1325,6 +1325,7 @@ export default function App() {
               matchHistory={matchHistory}
               status={phase}
               roundIndex={tournamentRound}
+              gameMode={gameMode}
               lang={language}
             />
 
