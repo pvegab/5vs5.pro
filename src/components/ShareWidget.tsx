@@ -863,15 +863,10 @@ ${getRoundReachedText()}
 
       <div className="pt-1 border-t border-[#c8aa6e]/10">
         <ExoClickAd
-          zoneId={5943026}
-          className="md:hidden"
-          minHeight={100}
-        />
-
-        <ExoClickAd
-          zoneId={5943032}
-          className="hidden md:flex"
-          minHeight={90}
+          placement="nativeFinal"
+          subId={`native_final_${status}`}
+          className="mt-6"
+          minHeight={280}
         />
       </div>
     </div>
