@@ -319,6 +319,53 @@ export default function Leaderboard({
   const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'normal' ? 1.0 : 1.5)));
   const recordString = `${winsCount}W-${lossesCount}L`;
 
+  const isAllowedMode = (mode?: string) => mode === 'normal' || mode === 'lecHard' || mode === 'lcsHard';
+
+  const sanitizeEntry = (entry: LeaderboardEntry): LeaderboardEntry => ({
+    ...entry,
+    name: String(entry.name || '').trim().slice(0, 24),
+    countryCode: String(entry.countryCode || '').trim().toUpperCase().slice(0, 8),
+    flag: String(entry.flag || '').trim().slice(0, 8),
+    record: String(entry.record || '').trim().slice(0, 12),
+    kills: Number(entry.kills || 0),
+    deaths: Number(entry.deaths || 0),
+    score: Number(entry.score || 0),
+    gameMode: isAllowedMode(String(entry.gameMode)) ? entry.gameMode : 'normal',
+    ovr: Number(entry.ovr || 0),
+    date: String(entry.date || '').slice(0, 20),
+  });
+
+  const isValidLeaderboardEntry = (entry: LeaderboardEntry) => {
+    const recordMatch = String(entry.record || '').match(/^(\d)W-(\d)L$/);
+    const kills = Number(entry.kills);
+    const deaths = Number(entry.deaths);
+    const score = Number(entry.score);
+    const ovr = Number(entry.ovr);
+
+    if (!entry.name || entry.name.length > 24) return false;
+    if (!recordMatch) return false;
+    if (!isAllowedMode(String(entry.gameMode))) return false;
+    if (!Number.isFinite(kills) || kills < 0 || kills > 250) return false;
+    if (!Number.isFinite(deaths) || deaths < 0 || deaths > 150) return false;
+    if (!Number.isFinite(ovr) || ovr < 1 || ovr > 99) return false;
+    if (!Number.isFinite(score) || score < 0 || score > 50000) return false;
+
+    const wins = Number(recordMatch[1]);
+    const losses = Number(recordMatch[2]);
+    if (wins < 0 || wins > 6 || losses < 0 || losses > 1) return false;
+    if (wins + losses < 1 || wins + losses > 6) return false;
+
+    return true;
+  };
+
+  const cleanLeaderboardEntries = (rawEntries: unknown): LeaderboardEntry[] => {
+    if (!Array.isArray(rawEntries)) return [];
+    return rawEntries
+      .map(entry => sanitizeEntry(entry as LeaderboardEntry))
+      .filter(isValidLeaderboardEntry)
+      .slice(0, 10);
+  };
+
   const normalizeMode = (mode?: GameMode | string): GameMode => {
     if (mode === 'lecHard' || mode === 'lcsHard') return mode;
     return 'normal';
@@ -341,10 +388,10 @@ export default function Leaderboard({
   const loadTopLeaderboard = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}?limit=10`);
+      const response = await fetch(`${API_URL}?limit=50`);
       if (!response.ok) throw new Error('No se pudo cargar el ranking');
       const data = await response.json();
-      setEntries(Array.isArray(data) ? data : []);
+      setEntries(cleanLeaderboardEntries(data));
     } catch (error) {
       console.error(error);
       setEntries([]);
@@ -363,7 +410,7 @@ export default function Leaderboard({
       setSubmittedEntryId(Number(result.id || entryId));
       setPersonalPosition(result.position ? Number(result.position) : null);
       setTotalEntries(result.total ? Number(result.total) : null);
-      setEntries(Array.isArray(result.nearby) ? result.nearby : []);
+      setEntries(cleanLeaderboardEntries(result.nearby));
     } catch (error) {
       console.error(error);
       setSubmitError(t.positionError);
@@ -384,16 +431,23 @@ export default function Leaderboard({
     setSubmitError('');
     setIsSubmitting(true);
 
+    const safeName = coachName.trim().replace(/[<>]/g, '').slice(0, 24);
+    const safeKills = Math.max(0, Math.min(250, Number(totalKills || 0)));
+    const safeDeaths = Math.max(0, Math.min(150, Number(totalDeaths || 0)));
+    const safeOvr = Math.max(1, Math.min(99, Number(teamOvr || 1)));
+    const safeScore = Math.max(0, Math.min(50000, Number(runScore || 0)));
+    const safeMode = normalizeMode(gameMode);
+
     const newEntry: LeaderboardEntry = {
-      name: coachName.trim(),
+      name: safeName,
       countryCode: selectedCountry.code,
       flag: '',
       record: recordString,
-      kills: totalKills,
-      deaths: totalDeaths,
-      score: runScore,
-      gameMode,
-      ovr: teamOvr,
+      kills: safeKills,
+      deaths: safeDeaths,
+      score: safeScore,
+      gameMode: safeMode,
+      ovr: safeOvr,
       date: new Date().toISOString().split('T')[0],
     };
 
