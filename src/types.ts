@@ -1,5 +1,7 @@
 export type Region = 'LCK' | 'LPL' | 'LEC' | 'LCS' | 'Wildcards';
 
+export type GameMode = 'normal' | 'lecHard' | 'lcsHard';
+
 export type Role = 'top' | 'jungle' | 'mid' | 'adc' | 'support' | 'coach' | 'reserve';
 
 export interface Player {
