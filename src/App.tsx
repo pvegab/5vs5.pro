@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SelectedSlot, TeamDraft, HistoricalTeam, Player, Role, Region } from './types';
+import { SelectedSlot, TeamDraft, HistoricalTeam, Player, Role, Region, GameMode } from './types';
 import { LEAGUE_TEAMS } from './data/lolTeams';
 import PlayerCard from './components/PlayerCard';
 import SlotCard from './components/SlotCard';
@@ -38,8 +38,8 @@ export default function App() {
   
   // Custom language switcher state
   const [language, setLanguage] = useState<Language>('es');
-  // Custom game mode state ('normal' or 'lecHard' (LEC to World Champion))
-  const [gameMode, setGameMode] = useState<'normal' | 'lecHard'>('normal');
+  // Custom game mode state: normal Worlds, LEC hard path or LCS NA hard path
+  const [gameMode, setGameMode] = useState<GameMode>('normal');
 
   const [tournamentRound, setTournamentRound] = useState(0); // 0 to 5 for 6 rounds
   const [hasDoubleRoll, setHasDoubleRoll] = useState(2); // Provide 2 emergency re-rolls for bad layout matching
@@ -462,14 +462,17 @@ export default function App() {
   // Draft completion requires all 6 essential positions (top, jungle, mid, adc, support, coach) to be completed
   const isDraftComplete = getDraftedCount() === 6;
 
-  // Restrict teams pool under Hard/LEC mode to only historic European rosters!
-  const availableTeams = gameMode === 'lecHard'
-    ? LEAGUE_TEAMS.filter(t => t.region === 'LEC' && t.id !== 'custom')
-    : LEAGUE_TEAMS.filter(t => {
-        if (t.id === 'custom') return false;
-        if (t.region === 'LEC') return t.hasWorldsAppearance === true;
-        return true;
-      });
+  // Draft pools by mode:
+  // normal: only rosters that attended Worlds that exact year.
+  // lecHard: all historic European LEC/EU LCS rosters.
+  // lcsHard: all historic North American LCS rosters.
+  const availableTeams = LEAGUE_TEAMS.filter(t => {
+    if (t.id === 'custom') return false;
+    if (gameMode === 'normal') return t.hasWorldsAppearance === true;
+    if (gameMode === 'lecHard') return t.region === 'LEC';
+    if (gameMode === 'lcsHard') return t.region === 'LCS';
+    return false;
+  });
 
   // Handles roulette roll result
   const handleRouletteResult = (team: HistoricalTeam) => {
@@ -774,6 +777,30 @@ export default function App() {
                           <span className="text-[8px] bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded uppercase font-bold tracking-widest">{activeTrans.diffHard}</span>
                         </div>
                         <p className="text-[10px] text-[#a09b8c] mt-0.5 leading-relaxed">{activeTrans.modeLecHardDesc}</p>
+                      </div>
+                    </button>
+
+                    {/* LCS NA Hard Mode Button */}
+                    <button
+                      type="button"
+                      onClick={() => setGameMode('lcsHard')}
+                      className={`w-full p-3 rounded-xl border text-left cursor-pointer transition-all flex items-start gap-2.5 ${
+                        gameMode === 'lcsHard'
+                          ? 'bg-blue-500/5 border-blue-500/50 text-white shadow-md ring-1 ring-blue-500/10'
+                          : 'bg-[#010a13] border-slate-800/80 text-[#a09b8c]/80 hover:bg-[#1e2328]/30'
+                      }`}
+                    >
+                      <div className="pt-0.5">
+                        <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center p-0.5">
+                          {gameMode === 'lcsHard' && <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-blue-400">{activeTrans.modeLcsHard}</span>
+                          <span className="text-[8px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded uppercase font-bold tracking-widest">{activeTrans.diffHard}</span>
+                        </div>
+                        <p className="text-[10px] text-[#a09b8c] mt-0.5 leading-relaxed">{activeTrans.modeLcsHardDesc}</p>
                       </div>
                     </button>
                   </div>
@@ -1151,7 +1178,7 @@ export default function App() {
                     <div className="bg-[#c8aa6e]/10 border border-[#c8aa6e]/20 p-3 rounded-xl flex items-center justify-center gap-2">
                       <Sparkles className="w-5 h-5 text-[#c8aa6e] animate-pulse" />
                       <span className="text-xs text-[#c8aa6e] font-bold">
-                        {gameMode === 'lecHard' ? activeTrans.worldsWaitTitle : '¡Squad listo para disputar el Mundial!'}
+                        {gameMode !== 'normal' ? activeTrans.worldsWaitTitle : '¡Squad listo para disputar el Mundial!'}
                       </span>
                     </div>
 
@@ -1211,6 +1238,7 @@ export default function App() {
               currentRound={tournamentRound}
               teamScore={currentTeamScore}
               synergyDetails={synergyDetails}
+              matchHistory={matchHistory}
               onRoundComplete={handleRoundComplete}
               onResetTournament={handleResetTournament}
               gameMode={gameMode}
