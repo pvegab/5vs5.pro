@@ -92,9 +92,9 @@ const ES: TextSet = {
   loading: 'Cargando ranking global...',
   empty: 'Todavía no hay resultados guardados.',
   hard: 'DIFÍCIL',
-  hardLec: 'LEC DIFÍCIL',
-  hardLcs: 'LCS NA DIFÍCIL',
-  normal: 'NORMAL',
+  hardLec: 'LEC HARD',
+  hardLcs: 'LCS NA HARD',
+  normal: 'WORLDS',
   saveError: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
   positionError: 'Resultado guardado, pero no se pudo cargar tu posición. Revisa el endpoint /around en el backend.',
   you: 'TÚ',
@@ -126,7 +126,7 @@ const EN: TextSet = {
   hard: 'HARD',
   hardLec: 'LEC HARD',
   hardLcs: 'LCS NA HARD',
-  normal: 'NORMAL',
+  normal: 'WORLDS',
   saveError: 'Could not save the result. Please try again.',
   positionError: 'Result saved, but your nearby ranking could not be loaded. Check the backend /around endpoint.',
   you: 'YOU',
@@ -157,30 +157,109 @@ const names = (es: string, en: string): Record<Language, string> => ({
 });
 
 const COUNTRIES: Country[] = [
+  // Europa
   { code: 'ES', flag: '🇪🇸', names: names('España', 'Spain') },
   { code: 'DE', flag: '🇩🇪', names: names('Alemania', 'Germany') },
   { code: 'FR', flag: '🇫🇷', names: names('Francia', 'France') },
   { code: 'PT', flag: '🇵🇹', names: names('Portugal', 'Portugal') },
   { code: 'IT', flag: '🇮🇹', names: names('Italia', 'Italy') },
   { code: 'GB', flag: '🇬🇧', names: names('Reino Unido', 'United Kingdom') },
+  { code: 'IE', flag: '🇮🇪', names: names('Irlanda', 'Ireland') },
   { code: 'NL', flag: '🇳🇱', names: names('Países Bajos', 'Netherlands') },
+  { code: 'BE', flag: '🇧🇪', names: names('Bélgica', 'Belgium') },
+  { code: 'LU', flag: '🇱🇺', names: names('Luxemburgo', 'Luxembourg') },
+  { code: 'CH', flag: '🇨🇭', names: names('Suiza', 'Switzerland') },
+  { code: 'AT', flag: '🇦🇹', names: names('Austria', 'Austria') },
   { code: 'SE', flag: '🇸🇪', names: names('Suecia', 'Sweden') },
   { code: 'DK', flag: '🇩🇰', names: names('Dinamarca', 'Denmark') },
   { code: 'NO', flag: '🇳🇴', names: names('Noruega', 'Norway') },
   { code: 'FI', flag: '🇫🇮', names: names('Finlandia', 'Finland') },
+  { code: 'IS', flag: '🇮🇸', names: names('Islandia', 'Iceland') },
   { code: 'PL', flag: '🇵🇱', names: names('Polonia', 'Poland') },
-  { code: 'BE', flag: '🇧🇪', names: names('Bélgica', 'Belgium') },
-  { code: 'CH', flag: '🇨🇭', names: names('Suiza', 'Switzerland') },
-  { code: 'AT', flag: '🇦🇹', names: names('Austria', 'Austria') },
-  { code: 'IE', flag: '🇮🇪', names: names('Irlanda', 'Ireland') },
   { code: 'CZ', flag: '🇨🇿', names: names('Chequia', 'Czechia') },
-  { code: 'GR', flag: '🇬🇷', names: names('Grecia', 'Greece') },
+  { code: 'SK', flag: '🇸🇰', names: names('Eslovaquia', 'Slovakia') },
+  { code: 'HU', flag: '🇭🇺', names: names('Hungría', 'Hungary') },
   { code: 'RO', flag: '🇷🇴', names: names('Rumanía', 'Romania') },
   { code: 'BG', flag: '🇧🇬', names: names('Bulgaria', 'Bulgaria') },
+  { code: 'GR', flag: '🇬🇷', names: names('Grecia', 'Greece') },
   { code: 'HR', flag: '🇭🇷', names: names('Croacia', 'Croatia') },
   { code: 'RS', flag: '🇷🇸', names: names('Serbia', 'Serbia') },
+  { code: 'SI', flag: '🇸🇮', names: names('Eslovenia', 'Slovenia') },
+  { code: 'BA', flag: '🇧🇦', names: names('Bosnia y Herzegovina', 'Bosnia and Herzegovina') },
+  { code: 'ME', flag: '🇲🇪', names: names('Montenegro', 'Montenegro') },
+  { code: 'MK', flag: '🇲🇰', names: names('Macedonia del Norte', 'North Macedonia') },
+  { code: 'AL', flag: '🇦🇱', names: names('Albania', 'Albania') },
+  { code: 'EE', flag: '🇪🇪', names: names('Estonia', 'Estonia') },
+  { code: 'LV', flag: '🇱🇻', names: names('Letonia', 'Latvia') },
+  { code: 'LT', flag: '🇱🇹', names: names('Lituania', 'Lithuania') },
   { code: 'UA', flag: '🇺🇦', names: names('Ucrania', 'Ukraine') },
   { code: 'TR', flag: '🇹🇷', names: names('Turquía', 'Turkey') },
+
+  // Norteamérica
+  { code: 'US', flag: '🇺🇸', names: names('Estados Unidos', 'United States') },
+  { code: 'CA', flag: '🇨🇦', names: names('Canadá', 'Canada') },
+  { code: 'MX', flag: '🇲🇽', names: names('México', 'Mexico') },
+
+  // Centroamérica y Caribe
+  { code: 'GT', flag: '🇬🇹', names: names('Guatemala', 'Guatemala') },
+  { code: 'BZ', flag: '🇧🇿', names: names('Belice', 'Belize') },
+  { code: 'SV', flag: '🇸🇻', names: names('El Salvador', 'El Salvador') },
+  { code: 'HN', flag: '🇭🇳', names: names('Honduras', 'Honduras') },
+  { code: 'NI', flag: '🇳🇮', names: names('Nicaragua', 'Nicaragua') },
+  { code: 'CR', flag: '🇨🇷', names: names('Costa Rica', 'Costa Rica') },
+  { code: 'PA', flag: '🇵🇦', names: names('Panamá', 'Panama') },
+  { code: 'CU', flag: '🇨🇺', names: names('Cuba', 'Cuba') },
+  { code: 'DO', flag: '🇩🇴', names: names('República Dominicana', 'Dominican Republic') },
+  { code: 'PR', flag: '🇵🇷', names: names('Puerto Rico', 'Puerto Rico') },
+  { code: 'JM', flag: '🇯🇲', names: names('Jamaica', 'Jamaica') },
+  { code: 'TT', flag: '🇹🇹', names: names('Trinidad y Tobago', 'Trinidad and Tobago') },
+
+  // Sudamérica
+  { code: 'AR', flag: '🇦🇷', names: names('Argentina', 'Argentina') },
+  { code: 'BO', flag: '🇧🇴', names: names('Bolivia', 'Bolivia') },
+  { code: 'BR', flag: '🇧🇷', names: names('Brasil', 'Brazil') },
+  { code: 'CL', flag: '🇨🇱', names: names('Chile', 'Chile') },
+  { code: 'CO', flag: '🇨🇴', names: names('Colombia', 'Colombia') },
+  { code: 'EC', flag: '🇪🇨', names: names('Ecuador', 'Ecuador') },
+  { code: 'PY', flag: '🇵🇾', names: names('Paraguay', 'Paraguay') },
+  { code: 'PE', flag: '🇵🇪', names: names('Perú', 'Peru') },
+  { code: 'UY', flag: '🇺🇾', names: names('Uruguay', 'Uruguay') },
+  { code: 'VE', flag: '🇻🇪', names: names('Venezuela', 'Venezuela') },
+
+  // Asia
+  { code: 'KR', flag: '🇰🇷', names: names('Corea del Sur', 'South Korea') },
+  { code: 'CN', flag: '🇨🇳', names: names('China', 'China') },
+  { code: 'JP', flag: '🇯🇵', names: names('Japón', 'Japan') },
+  { code: 'TW', flag: '🇹🇼', names: names('Taiwán', 'Taiwan') },
+  { code: 'HK', flag: '🇭🇰', names: names('Hong Kong', 'Hong Kong') },
+  { code: 'MO', flag: '🇲🇴', names: names('Macao', 'Macau') },
+  { code: 'SG', flag: '🇸🇬', names: names('Singapur', 'Singapore') },
+  { code: 'MY', flag: '🇲🇾', names: names('Malasia', 'Malaysia') },
+  { code: 'TH', flag: '🇹🇭', names: names('Tailandia', 'Thailand') },
+  { code: 'VN', flag: '🇻🇳', names: names('Vietnam', 'Vietnam') },
+  { code: 'PH', flag: '🇵🇭', names: names('Filipinas', 'Philippines') },
+  { code: 'ID', flag: '🇮🇩', names: names('Indonesia', 'Indonesia') },
+  { code: 'IN', flag: '🇮🇳', names: names('India', 'India') },
+  { code: 'PK', flag: '🇵🇰', names: names('Pakistán', 'Pakistan') },
+  { code: 'BD', flag: '🇧🇩', names: names('Bangladés', 'Bangladesh') },
+  { code: 'LK', flag: '🇱🇰', names: names('Sri Lanka', 'Sri Lanka') },
+  { code: 'MN', flag: '🇲🇳', names: names('Mongolia', 'Mongolia') },
+
+  // Oceanía
+  { code: 'AU', flag: '🇦🇺', names: names('Australia', 'Australia') },
+  { code: 'NZ', flag: '🇳🇿', names: names('Nueva Zelanda', 'New Zealand') },
+
+  // Oriente Medio y África
+  { code: 'SA', flag: '🇸🇦', names: names('Arabia Saudí', 'Saudi Arabia') },
+  { code: 'AE', flag: '🇦🇪', names: names('Emiratos Árabes Unidos', 'United Arab Emirates') },
+  { code: 'QA', flag: '🇶🇦', names: names('Catar', 'Qatar') },
+  { code: 'KW', flag: '🇰🇼', names: names('Kuwait', 'Kuwait') },
+  { code: 'IL', flag: '🇮🇱', names: names('Israel', 'Israel') },
+  { code: 'MA', flag: '🇲🇦', names: names('Marruecos', 'Morocco') },
+  { code: 'DZ', flag: '🇩🇿', names: names('Argelia', 'Algeria') },
+  { code: 'TN', flag: '🇹🇳', names: names('Túnez', 'Tunisia') },
+  { code: 'EG', flag: '🇪🇬', names: names('Egipto', 'Egypt') },
+  { code: 'ZA', flag: '🇿🇦', names: names('Sudáfrica', 'South Africa') },
 ];
 
 const getFlagByCountryCode = (countryCode?: string) => {
@@ -222,16 +301,23 @@ export default function Leaderboard({
   const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'normal' ? 1.0 : 1.5)));
   const recordString = `${winsCount}W-${lossesCount}L`;
 
-  const getModeLabel = (mode: GameMode) => {
-    if (mode === 'lecHard') return t.hardLec;
-    if (mode === 'lcsHard') return t.hardLcs;
+  const normalizeMode = (mode?: GameMode | string): GameMode => {
+    if (mode === 'lecHard' || mode === 'lcsHard') return mode;
+    return 'normal';
+  };
+
+  const getModeLabel = (mode: GameMode | string) => {
+    const normalizedMode = normalizeMode(mode);
+    if (normalizedMode === 'lecHard') return t.hardLec;
+    if (normalizedMode === 'lcsHard') return t.hardLcs;
     return t.normal;
   };
 
-  const getModeBadgeClass = (mode: GameMode) => {
-    if (mode === 'lecHard') return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
-    if (mode === 'lcsHard') return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-    return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+  const getModeBadgeClass = (mode: GameMode | string) => {
+    const normalizedMode = normalizeMode(mode);
+    if (normalizedMode === 'lecHard') return 'bg-red-500/15 text-red-300 border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.12)]';
+    if (normalizedMode === 'lcsHard') return 'bg-red-700/20 text-red-200 border border-red-500/45 shadow-[0_0_10px_rgba(239,68,68,0.12)]';
+    return 'bg-amber-400/15 text-amber-300 border border-amber-400/45 shadow-[0_0_10px_rgba(251,191,36,0.12)]';
   };
 
   const loadTopLeaderboard = async () => {
