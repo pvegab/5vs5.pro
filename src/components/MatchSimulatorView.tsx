@@ -3,6 +3,7 @@ import { TeamDraft, HistoricalTeam, MatchEvent, MatchSimulator, Region, Player, 
 import { Trophy, Shield, Play, RotateCcw, Swords, Compass, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
 import { Language, TRANSLATIONS, getLocalizedRoundName } from '../locales';
 import { playVictorySound, playDefeatSound } from '../utils/audio';
+import ExoClickAd from './ExoClickAd';
 
 interface MatchSimulatorViewProps {
   draft: TeamDraft;
@@ -1379,6 +1380,15 @@ export default function MatchSimulatorView({
                     {lang === 'es' ? 'VER PANEL DE RESULTADOS' : 'VIEW RUN RESULTS'}
                   </button>
                 </div>
+              )}
+
+              {(simulator.status === 'win' || simulator.status === 'loss') && (
+                <ExoClickAd
+                  placement="outstreamResult"
+                  subId={`match_result_round_${currentRound + 1}_${simulator.status}`}
+                  className="my-2"
+                  minHeight={280}
+                />
               )}
             </div>
           )}
