@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;600;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Outfit", "Inter", sans-serif;
+}
+
+body {
+  background-color: #010a13;
+  color: #f0e6d2;
+  font-family: var(--font-sans);
+}
+
+/* Custom keyframes for custom animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Custom scrollbars matching LoL Golden Theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background-color: #010a13;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c8aa6e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #f0e6d2;
+}
+
+@keyframes flashGlow {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(200, 170, 110, 0); }
+  35% { transform: scale(1.02); box-shadow: 0 0 20px rgba(200, 170, 110, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(200, 170, 110, 0); }
+}
+
+.animate-flash-glow {
+  animation: flashGlow 1.2s ease-out;
+}
+

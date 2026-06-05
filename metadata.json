@@ -1,0 +1,6 @@
+{
+  "name": "Worlds Draft Challenge",
+  "description": "Crea tu equipo definitivo de League of Legends mediante ruleta y gana la Copa del Invocador invicto 6-0.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
