@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TeamDraft, GameMode } from '../types';
 import { Share2, Download } from 'lucide-react';
 import { Language, getLocalizedRoundName } from '../locales';
-import ExoClickAd from './ExoClickAd';
 
 interface MatchHistoryItem {
   roundIndex: number;
@@ -859,15 +858,6 @@ ${getRoundReachedText()}
             </button>
           </div>
         </div>
-      </div>
-
-      <div className="pt-1 border-t border-[#c8aa6e]/10">
-        <ExoClickAd
-          placement="nativeFinal"
-          subId={`native_final_${status}`}
-          className="mt-6"
-          minHeight={280}
-        />
       </div>
     </div>
   );
