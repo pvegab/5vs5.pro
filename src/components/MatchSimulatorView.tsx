@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TeamDraft, HistoricalTeam, MatchEvent, MatchSimulator, Region, Player } from '../types';
+import { TeamDraft, HistoricalTeam, MatchEvent, MatchSimulator, Region, Player, GameMode } from '../types';
 import { Trophy, Shield, Play, RotateCcw, Swords, Compass, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
 import { Language, TRANSLATIONS, getLocalizedRoundName } from '../locales';
 import { playVictorySound, playDefeatSound } from '../utils/audio';
@@ -18,13 +18,21 @@ interface MatchSimulatorViewProps {
     activeSynergies?: string[];
     total: number;
   };
+  matchHistory?: {
+    roundIndex: number;
+    roundName: string;
+    opponentName: string;
+    opponentYear: number;
+    opponentRegion: string;
+    result: 'W' | 'L';
+  }[];
   onRoundComplete: (
     success: boolean,
     opponent?: HistoricalTeam,
     performance?: { kills: number; deaths: number }
   ) => void;
   onResetTournament: (fullReset: boolean) => void;
-  gameMode?: 'normal' | 'lecHard';
+  gameMode?: GameMode;
   lang?: Language;
 }
 
@@ -675,6 +683,7 @@ export default function MatchSimulatorView({
   currentRound,
   teamScore,
   synergyDetails,
+  matchHistory = [],
   onRoundComplete,
   onResetTournament,
   gameMode = 'normal',
@@ -695,32 +704,92 @@ export default function MatchSimulatorView({
     }
   }, [displayedEvents]);
 
-  // Setup/Draw Match when round loads
+  // Setup/Draw Match when round loads.
+  // Rival variance rules:
+  // 1) Never draw the exact same team + year already present in the user's draft.
+  // 2) Never repeat a rival already faced in the same run, unless the pool becomes too small.
   useEffect(() => {
-    let validOpponents = opponentTeamsList.filter(t => {
-      if (t.id === 'custom') return false;
-      if (gameMode === 'normal') {
-        if (t.region === 'LEC') {
-          return t.hasWorldsAppearance === true;
-        }
-      }
-      return true;
-    });
+    const getTeamKey = (team: HistoricalTeam | { name: string; year: number }) =>
+      `${team.name.trim().toLowerCase()}-${team.year}`;
 
-    // Rule boundary: LEC Hard Mode splits matches
-    if (gameMode === 'lecHard') {
-      if (currentRound < 3) {
-        // LEC Playoffs stage: opponents must be only from LEC!
-        validOpponents = opponentTeamsList.filter(t => t.region === 'LEC' && t.id !== 'custom');
-      } else {
-        // Worlds stage: opponents must be titans from Non-LEC regions (LPL, LCK giants only)
-        validOpponents = opponentTeamsList.filter(t => t.region !== 'LEC' && t.region !== 'LCS' && t.id !== 'custom');
+    const draftedTeamKeys = new Set(
+      (Object.values(draft) as { fromTeam: { name: string; year: number } | null }[])
+        .map(slot => slot.fromTeam ? getTeamKey(slot.fromTeam) : null)
+        .filter(Boolean) as string[]
+    );
+
+    const alreadyPlayedTeamKeys = new Set(
+      matchHistory.map(match => getTeamKey({ name: match.opponentName, year: match.opponentYear }))
+    );
+
+    const applyVarianceRules = (teams: HistoricalTeam[], allowAlreadyPlayed = false) => {
+      return teams.filter(team => {
+        if (team.id === 'custom') return false;
+        const key = getTeamKey(team);
+        if (draftedTeamKeys.has(key)) return false;
+        if (!allowAlreadyPlayed && alreadyPlayedTeamKeys.has(key)) return false;
+        return true;
+      });
+    };
+
+    const getBasePool = () => {
+      if (gameMode === 'normal') {
+        // Normal mode: only rosters that attended Worlds that exact year.
+        return opponentTeamsList.filter(team => team.hasWorldsAppearance === true && team.id !== 'custom');
       }
+
+      if (gameMode === 'lecHard') {
+        if (currentRound < 3) {
+          // Regional stage: only historic European rosters.
+          return opponentTeamsList.filter(team => team.region === 'LEC' && team.id !== 'custom');
+        }
+
+        // International stage: Worlds-level non-Western giants.
+        return opponentTeamsList.filter(team =>
+          team.hasWorldsAppearance === true &&
+          team.region !== 'LEC' &&
+          team.region !== 'LCS' &&
+          team.id !== 'custom'
+        );
+      }
+
+      if (gameMode === 'lcsHard') {
+        if (currentRound < 3) {
+          // Regional stage: only historic North American LCS rosters.
+          return opponentTeamsList.filter(team => team.region === 'LCS' && team.id !== 'custom');
+        }
+
+        // International stage: Worlds-level non-Western giants.
+        return opponentTeamsList.filter(team =>
+          team.hasWorldsAppearance === true &&
+          team.region !== 'LEC' &&
+          team.region !== 'LCS' &&
+          team.id !== 'custom'
+        );
+      }
+
+      return opponentTeamsList.filter(team => team.id !== 'custom');
+    };
+
+    const basePool = getBasePool();
+
+    let validOpponents = applyVarianceRules(basePool, false);
+
+    // If all teams were already played, relax the "already played" rule but still block teams from the user's draft.
+    if (validOpponents.length === 0) {
+      validOpponents = applyVarianceRules(basePool, true);
     }
 
-    // Default fallback if filtered list is empty to prevent crash
+    // Final fallback: keep the game alive, but still avoid the user's drafted exact team/year where possible.
     if (validOpponents.length === 0) {
-      validOpponents = opponentTeamsList.filter(t => t.id !== 'custom');
+      validOpponents = opponentTeamsList.filter(team => {
+        if (team.id === 'custom') return false;
+        return !draftedTeamKeys.has(getTeamKey(team));
+      });
+    }
+
+    if (validOpponents.length === 0) {
+      validOpponents = opponentTeamsList.filter(team => team.id !== 'custom');
     }
 
     const randomOpponent = validOpponents[Math.floor(Math.random() * validOpponents.length)];
@@ -734,16 +803,16 @@ export default function MatchSimulatorView({
       oRoster.support.rating +
       oRoster.coach.rating
     ) / 6;
-    
-    // Calculate difficult modifiers
-    let roundDifficultyBonus = currentRound * 1.5; 
-    
-    if (gameMode === 'lecHard') {
+
+    // Calculate difficulty modifiers
+    let roundDifficultyBonus = currentRound * 1.5;
+
+    if (gameMode === 'lecHard' || gameMode === 'lcsHard') {
       if (currentRound < 3) {
-        // LEC is competitive (+1 to +5 OVR)
+        // Regional playoffs stage: demanding, but not as punishing as Worlds.
         roundDifficultyBonus = currentRound * 2.5 + 1.5;
       } else {
-        // International stages in World are absolutely monstrous! (+7 to +13 OVR)
+        // International stage: LCK/LPL-level bosses.
         roundDifficultyBonus = currentRound * 3.2 + 2.5;
       }
     }
@@ -753,7 +822,7 @@ export default function MatchSimulatorView({
     // Calculate win probability
     const scoreDiff = teamScore - opponentFinalScore;
     const baseWinChance = (gameMode === 'normal' ? 56 : 50) + (scoreDiff * 4.4);
-    // Hard limit win values to maintain challenge while remaining possible
+
     const winChance = gameMode === 'normal'
       ? Math.max(22, Math.min(95, baseWinChance))
       : Math.max(12, Math.min(91, baseWinChance));
@@ -770,7 +839,7 @@ export default function MatchSimulatorView({
     setDisplayedEvents([]);
     setIsPlayingEvents(false);
     setGameResultTriggered(false);
-  }, [currentRound, teamScore, opponentTeamsList, gameMode]);
+  }, [currentRound, teamScore, opponentTeamsList, gameMode, draft, matchHistory]);
 
   if (!simulator) return null;
 
@@ -942,7 +1011,7 @@ export default function MatchSimulatorView({
       case 'top':
         return '⚔️';
       case 'jungle':
-        return '🪴';
+        return '🌿';
       case 'mid':
         return '🔮';
       case 'adc':
