@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player, Region } from '../types';
-import { Shield, Swords, Sparkles, User, Crosshair, Star, HelpCircle } from 'lucide-react';
+import { Shield, Swords, Sparkles, User, Crosshair, HelpCircle } from 'lucide-react';
 
 interface PlayerCardProps {
   player: Player;
@@ -34,15 +34,15 @@ export default function PlayerCard({
   const getRoleIcon = (roleStr: string) => {
     switch (roleStr) {
       case 'top':
-        return <Shield className="w-4 h-4 text-[#c8aa6e]" />;
+        return <Swords className="w-4 h-4 text-[#c8aa6e]" />;
       case 'jungle':
-        return <Swords className="w-4 h-4 text-emerald-500" />;
+        return <span className="text-[15px] leading-none text-emerald-400">🪴</span>;
       case 'mid':
         return <Sparkles className="w-4 h-4 text-purple-400" />;
       case 'adc':
         return <Crosshair className="w-4 h-4 text-red-400" />;
       case 'support':
-        return <Star className="w-4 h-4 text-cyan-400" />;
+        return <Shield className="w-4 h-4 text-cyan-400" />;
       case 'coach':
         return <User className="w-4 h-4 text-[#c8aa6e]" />;
       default:
@@ -173,7 +173,7 @@ export default function PlayerCard({
         } border-2`}>
           {/* Subtle neon horizontal glow effect */}
           <div className="absolute inset-x-0 top-1/2 h-[1px] bg-white/10 animate-pulse" />
-          
+
           {/* Stylized Esports Jersey Athlete Silhouette SVG */}
           <svg className="absolute inset-0 w-full h-full opacity-25 select-none pointer-events-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Athlete jersey collar & shoulders in corresponding themed color */}
@@ -202,7 +202,7 @@ export default function PlayerCard({
           <div className="absolute top-1.5 right-1.5 opacity-40">
             {getRoleIcon(player.role)}
           </div>
-          
+
           <span className={`text-[23px] font-black tracking-tight font-display select-none drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)] z-10 ${
             player.role === 'top' ? 'text-[#c8aa6e]' :
             player.role === 'jungle' ? 'text-emerald-400' :
@@ -233,7 +233,7 @@ export default function PlayerCard({
         <div className="font-sans font-black tracking-tight text-[#f0e6d2] text-[13px] sm:text-sm leading-none truncate px-1">
           {player.name}
         </div>
-        
+
         <div className="mt-1 sm:mt-1.5 pt-1 sm:pt-1.5 border-t border-[#c8aa6e]/10 flex flex-col items-center justify-center gap-0.5 min-h-[30px]">
           <span className="text-[9px] text-[#a09b8c] font-black uppercase tracking-wider truncate max-w-full">
             {teamName ? `${teamName} '${String(year).slice(-2)}` : 'S/E'}
