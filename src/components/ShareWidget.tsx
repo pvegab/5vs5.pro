@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TeamDraft } from '../types';
 import { Share2, Download } from 'lucide-react';
 import { Language, getLocalizedRoundName } from '../locales';
+import ExoClickAd from './ExoClickAd';
 
 interface MatchHistoryItem {
   roundIndex: number;
@@ -803,6 +804,20 @@ ${getRoundReachedText()}
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="pt-1 border-t border-[#c8aa6e]/10">
+        <ExoClickAd
+          zoneId={5943026}
+          className="md:hidden"
+          minHeight={100}
+        />
+
+        <ExoClickAd
+          zoneId={5943032}
+          className="hidden md:flex"
+          minHeight={90}
+        />
       </div>
     </div>
   );
