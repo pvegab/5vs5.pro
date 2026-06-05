@@ -9,6 +9,11 @@ interface ExoClickAdProps {
 const EXOCLICK_PROVIDER_SRC = 'https://a.magsrv.com/ad-provider.js';
 const EXOCLICK_SCRIPT_ID = 'exoclick-ad-provider';
 
+const EXOCLICK_ZONE_CLASSES: Record<number, string> = {
+  5943026: 'eas6a97888e10', // Mobile 300x100
+  5943032: 'eas6a97888e2',  // Desktop 728x90
+};
+
 export default function ExoClickAd({
   zoneId,
   className = '',
@@ -50,7 +55,7 @@ export default function ExoClickAd({
       data-ad-zone={zoneId}
     >
       <ins
-        className="eas6a97888e10"
+        className={EXOCLICK_ZONE_CLASSES[zoneId] || 'eas6a97888e10'}
         data-zoneid={String(zoneId)}
       />
     </div>
