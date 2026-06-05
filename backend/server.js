@@ -10,20 +10,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = await mysql.createPool({
-  host: process.env.DB_HOST,
+const db = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 });
 
-// Comprobar que el backend funciona
 app.get("/", (req, res) => {
   res.json({ message: "Backend funcionando correctamente" });
 });
 
-// Obtener ranking
 app.get("/api/leaderboard", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -32,12 +30,11 @@ app.get("/api/leaderboard", async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error(error);
+    console.error("Error leaderboard:", error);
     res.status(500).json({ error: "Error al obtener el ranking" });
   }
 });
 
-// Guardar resultado
 app.post("/api/leaderboard", async (req, res) => {
   try {
     const { username, team_name, players, coach, score, wins, losses } = req.body;
@@ -66,7 +63,7 @@ app.post("/api/leaderboard", async (req, res) => {
       id: result.insertId,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error guardar resultado:", error);
     res.status(500).json({ error: "Error al guardar el resultado" });
   }
 });
