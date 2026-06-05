@@ -935,6 +935,109 @@ export default function MatchSimulatorView({
   };
 
   const localizedRoundTitle = getLocalizedRoundName(currentRound, gameMode, lang);
+  const opponentDisplayName = `${simulator.opponent.name} ${simulator.opponent.year}`;
+
+  const getRoleEmoji = (role: 'top' | 'jungle' | 'mid' | 'adc' | 'support' | 'coach') => {
+    switch (role) {
+      case 'top':
+        return '⚔️';
+      case 'jungle':
+        return '🪴';
+      case 'mid':
+        return '🔮';
+      case 'adc':
+        return '🎯';
+      case 'support':
+        return '🛡️';
+      case 'coach':
+        return '🧠';
+      default:
+        return '•';
+    }
+  };
+
+  const getRoleShortLabel = (role: 'top' | 'jungle' | 'mid' | 'adc' | 'support' | 'coach') => {
+    switch (role) {
+      case 'top':
+        return 'TOP';
+      case 'jungle':
+        return 'JNG';
+      case 'mid':
+        return 'MID';
+      case 'adc':
+        return 'ADC';
+      case 'support':
+        return 'SUP';
+      case 'coach':
+        return lang === 'es' ? 'ENTR' : 'COACH';
+      default:
+        return role.toUpperCase();
+    }
+  };
+
+  const getVsTitle = () => {
+    switch (lang) {
+      case 'es':
+        return `MI EQUIPO VS ${opponentDisplayName.toUpperCase()}`;
+      case 'fr':
+        return `MON ÉQUIPE VS ${opponentDisplayName.toUpperCase()}`;
+      case 'de':
+        return `MEIN TEAM VS ${opponentDisplayName.toUpperCase()}`;
+      case 'it':
+        return `IL MIO TEAM VS ${opponentDisplayName.toUpperCase()}`;
+      case 'pt':
+        return `MINHA EQUIPE VS ${opponentDisplayName.toUpperCase()}`;
+      case 'ru':
+        return `МОЯ КОМАНДА VS ${opponentDisplayName.toUpperCase()}`;
+      case 'ko':
+        return `내 팀 VS ${opponentDisplayName.toUpperCase()}`;
+      case 'zh':
+        return `我的队伍 VS ${opponentDisplayName.toUpperCase()}`;
+      default:
+        return `MY TEAM VS ${opponentDisplayName.toUpperCase()}`;
+    }
+  };
+
+  const getEmptySlotLabel = () => {
+    switch (lang) {
+      case 'es':
+        return 'Sin jugador';
+      case 'fr':
+        return 'Vide';
+      case 'de':
+        return 'Leer';
+      case 'it':
+        return 'Vuoto';
+      case 'pt':
+        return 'Vazio';
+      case 'ru':
+        return 'Пусто';
+      case 'ko':
+        return '비어 있음';
+      case 'zh':
+        return '空位';
+      default:
+        return 'Empty';
+    }
+  };
+
+  const matchupRows = ([
+    { role: 'top', userSlot: draft.top, opponentPlayer: simulator.opponent.roster.top },
+    { role: 'jungle', userSlot: draft.jungle, opponentPlayer: simulator.opponent.roster.jungle },
+    { role: 'mid', userSlot: draft.mid, opponentPlayer: simulator.opponent.roster.mid },
+    { role: 'adc', userSlot: draft.adc, opponentPlayer: simulator.opponent.roster.adc },
+    { role: 'support', userSlot: draft.support, opponentPlayer: simulator.opponent.roster.support },
+    { role: 'coach', userSlot: draft.coach, opponentPlayer: simulator.opponent.roster.coach },
+  ] as const).map(row => ({
+    ...row,
+    icon: getRoleEmoji(row.role),
+    label: getRoleShortLabel(row.role),
+    userName: row.userSlot.player?.name || getEmptySlotLabel(),
+    userRating: row.userSlot.player?.rating ?? '-',
+    opponentName: row.opponentPlayer.name,
+    opponentRating: row.opponentPlayer.rating,
+  }));
+
 
   return (
     <div id="combat-simulation-view-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 max-w-7xl mx-auto">
@@ -947,7 +1050,7 @@ export default function MatchSimulatorView({
             <span>🛡️</span> {activeTrans.roundNameIntro}
           </h2>
           <h3 className="text-xl font-extrabold text-[#f0e6d2] uppercase font-display select-none">
-            {localizedRoundTitle} VS {simulator.opponent.name.toUpperCase()}
+            {localizedRoundTitle} VS {opponentDisplayName.toUpperCase()}
           </h3>
 
           <div className="flex items-center gap-4 mt-5 pt-4 border-t border-[#c8aa6e]/10">
@@ -1002,35 +1105,39 @@ export default function MatchSimulatorView({
         </div>
 
         {/* Roster composition mini specs */}
-        <div id="opponent-roster-spec-details" className="bg-[#050c14]/90 border border-[#c8aa6e]/10 rounded-2xl p-5 shadow-md flex-1">
+        <div id="opponent-roster-spec-details" className="bg-[#050c14]/90 border border-[#c8aa6e]/10 rounded-2xl p-4 sm:p-5 shadow-md flex-1">
           <h4 className="text-[10px] font-black text-[#c8aa6e] tracking-widest uppercase mb-3 flex items-center gap-1">
-            <span>⚔️</span> {lang === 'es' ? `ROSTER RIVAL DE ${simulator.opponent.name.toUpperCase()}` : `${simulator.opponent.name.toUpperCase()} ROSTER`}
+            <span>⚔️</span> {getVsTitle()}
           </h4>
-          <div className="flex flex-col gap-2 font-mono text-xs">
-            <div className="flex justify-between items-center py-1 border-b border-[#c8aa6e]/5 text-[#a09b8c]">
-              <span>🛡️ TOP</span>
-              <span className="text-[#f0e6d2] font-semibold">{simulator.opponent.roster.top.name} ({simulator.opponent.roster.top.rating})</span>
-            </div>
-            <div className="flex justify-between items-center py-1 border-b border-[#c8aa6e]/5 text-[#a09b8c]">
-              <span>⚔️ JNG</span>
-              <span className="text-[#f0e6d2] font-semibold">{simulator.opponent.roster.jungle.name} ({simulator.opponent.roster.jungle.rating})</span>
-            </div>
-            <div className="flex justify-between items-center py-1 border-b border-[#c8aa6e]/5 text-[#a09b8c]">
-              <span>🔮 MID</span>
-              <span className="text-[#f0e6d2] font-semibold">{simulator.opponent.roster.mid.name} ({simulator.opponent.roster.mid.rating})</span>
-            </div>
-            <div className="flex justify-between items-center py-1 border-b border-[#c8aa6e]/5 text-[#a09b8c]">
-              <span>🎯 ADC</span>
-              <span className="text-[#f0e6d2] font-semibold">{simulator.opponent.roster.adc.name} ({simulator.opponent.roster.adc.rating})</span>
-            </div>
-            <div className="flex justify-between items-center py-1 border-b border-[#c8aa6e]/5 text-[#a09b8c]">
-              <span>⭐ SUP</span>
-              <span className="text-[#f0e6d2] font-semibold">{simulator.opponent.roster.support.name} ({simulator.opponent.roster.support.rating})</span>
-            </div>
-            <div className="flex justify-between items-center py-1 text-[#a09b8c]">
-              <span>🧠 ENTR</span>
-              <span className="text-[#c8aa6e] font-semibold">{simulator.opponent.roster.coach.name} ({simulator.opponent.roster.coach.rating})</span>
-            </div>
+
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 px-2 pb-2 text-[8px] text-[#a09b8c] font-black uppercase tracking-widest border-b border-[#c8aa6e]/10">
+            <span>{lang === 'es' ? 'Mi roster' : 'My roster'}</span>
+            <span className="text-center">VS</span>
+            <span className="text-right">{simulator.opponent.name} {simulator.opponent.year}</span>
+          </div>
+
+          <div className="flex flex-col gap-2 font-mono text-[11px] sm:text-xs mt-2">
+            {matchupRows.map(row => (
+              <div
+                key={row.role}
+                className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center py-2 border-b border-[#c8aa6e]/5 text-[#a09b8c] last:border-b-0"
+              >
+                <div className="min-w-0 text-left">
+                  <div className="text-[#f0e6d2] font-semibold truncate">{row.userName}</div>
+                  <div className="text-[9px] text-[#c8aa6e]/80 font-black">OVR {row.userRating}</div>
+                </div>
+
+                <div className="shrink-0 text-center px-2 py-1 rounded-lg bg-[#010a13] border border-[#c8aa6e]/15 text-[#c8aa6e] font-black min-w-[54px]">
+                  <div className="leading-none">{row.icon}</div>
+                  <div className="text-[8px] tracking-widest mt-1">{row.label}</div>
+                </div>
+
+                <div className="min-w-0 text-right">
+                  <div className="text-[#f0e6d2] font-semibold truncate">{row.opponentName}</div>
+                  <div className="text-[9px] text-red-400/90 font-black">OVR {row.opponentRating}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1075,7 +1182,7 @@ export default function MatchSimulatorView({
                 {simulator.currentDeaths ?? 0}
               </span>
               <span className="text-[9px] text-[#a09b8c] uppercase tracking-widest font-sans font-black truncate max-w-[120px]">
-                {simulator.opponent.name}
+                {opponentDisplayName}
               </span>
             </div>
           )}
