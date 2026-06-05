@@ -30,9 +30,7 @@ interface ShareWidgetProps {
   lang?: Language;
 }
 
-const SITE_URL = 'https://5vs5.pro';
-
-const SHARE_LOCALES: Record<Language, {
+type ShareTextSet = {
   shareRecord: string;
   shareSub: string;
   method1: string;
@@ -57,301 +55,89 @@ const SHARE_LOCALES: Record<Language, {
   support: string;
   coach: string;
   from: string;
-  matchDetails: string;
   ctaQuestion: string;
   playFree: string;
   recordWin: (wins: number) => string;
   recordLoss: (wins: number, roundName: string) => string;
   recordFirstLoss: string;
-}> = {
-  es: {
-    shareRecord: 'Compartir Roster y Récord',
-    shareSub: 'Comparte tu equipo del Worlds Challenge con una tarjeta o enlace directo.',
-    method1: 'Compartir en WhatsApp o Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Descargar Tarjeta del Invocador',
-    passDesc: 'Tarjeta virtual de tu puntuación en Worlds Challenge.',
-    downloadPNG: 'Descargar Tarjeta',
-    shareCard: 'Compartir Tarjeta',
-    vacant: 'Sin seleccionar',
-    branding: 'WORLDS CHALLENGE • TARJETA DEL INVOCADOR',
-    victoryStat: '6-0 Invicto (Campeón del Mundo 🏆)',
-    eliminated: 'Eliminado',
-    sysShare: 'Compartir',
-    cardHover: 'Tarjeta del Invocador',
-    cardLoading: 'Generando tarjeta...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'ENTR',
-    from: 'de',
-    matchDetails: 'DETALLE DE ENCUENTROS',
-    ctaQuestion: '¿Crees que tu equipo puede vencer a los mejores de la historia y superarme?',
-    playFree: 'Juega GRATIS aquí:',
-    recordWin: () => '🏆 ¡Récord de 6-0! Conseguí conquistar el Worlds Challenge con un equipo de leyenda.',
-    recordLoss: (wins, roundName) => `🥈 ¡Récord de ${wins}-1! Conseguí superar las eliminatorias hasta caer con honor en: ${roundName}.`,
-    recordFirstLoss: '⚔️ Caí en el primer encuentro, pero mi equipo ya está listo para volver más fuerte.',
-  },
-  en: {
-    shareRecord: 'Share Roster & Record',
-    shareSub: 'Share your Worlds Challenge team with a card or direct link.',
-    method1: 'Share on WhatsApp or Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Download Summoner Card',
-    passDesc: 'Virtual card with your Worlds Challenge score.',
-    downloadPNG: 'Download Card',
-    shareCard: 'Share Card',
-    vacant: 'Vacant',
-    branding: 'WORLDS CHALLENGE • SUMMONER CARD',
-    victoryStat: '6-0 Undefeated (World Champion 🏆)',
-    eliminated: 'Eliminated',
-    sysShare: 'Share',
-    cardHover: 'Summoner Card',
-    cardLoading: 'Generating card...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: 'from',
-    matchDetails: 'MATCH DETAILS',
-    ctaQuestion: 'Do you think your team can beat the best in history and surpass me?',
-    playFree: 'Play FREE here:',
-    recordWin: () => '🏆 6-0 record! I conquered the Worlds Challenge with a legendary team.',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 record! I advanced through the bracket and fell with honor at: ${roundName}.`,
-    recordFirstLoss: '⚔️ I fell in the opening match, but my team is ready to come back stronger.',
-  },
-  fr: {
-    shareRecord: 'Partager le roster et le record',
-    shareSub: 'Partagez votre équipe Worlds Challenge avec une carte ou un lien direct.',
-    method1: 'Partager sur WhatsApp ou Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Télécharger la Carte d’Invocateur',
-    passDesc: 'Carte virtuelle avec votre score Worlds Challenge.',
-    downloadPNG: 'Télécharger la carte',
-    shareCard: 'Partager la carte',
-    vacant: 'Non sélectionné',
-    branding: 'WORLDS CHALLENGE • CARTE D’INVOCATEUR',
-    victoryStat: '6-0 Invaincu (Champion du Monde 🏆)',
-    eliminated: 'Éliminé',
-    sysShare: 'Partager',
-    cardHover: 'Carte d’Invocateur',
-    cardLoading: 'Génération de la carte...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: 'de',
-    matchDetails: 'DÉTAIL DES MATCHS',
-    ctaQuestion: 'Penses-tu que ton équipe peut battre les meilleurs de l’histoire et me dépasser ?',
-    playFree: 'Joue GRATUITEMENT ici :',
-    recordWin: () => '🏆 Record 6-0 ! J’ai conquis le Worlds Challenge avec une équipe légendaire.',
-    recordLoss: (wins, roundName) => `🥈 Record de ${wins}-1 ! J’ai avancé dans le tournoi avant de tomber avec honneur en : ${roundName}.`,
-    recordFirstLoss: '⚔️ Je suis tombé dès le premier match, mais mon équipe reviendra plus forte.',
-  },
-  de: {
-    shareRecord: 'Kader und Rekord teilen',
-    shareSub: 'Teile dein Worlds-Challenge-Team mit Karte oder Direktlink.',
-    method1: 'Auf WhatsApp oder Twitter/X teilen',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Beschwörerkarte herunterladen',
-    passDesc: 'Virtuelle Karte mit deinem Worlds-Challenge-Score.',
-    downloadPNG: 'Karte herunterladen',
-    shareCard: 'Karte teilen',
-    vacant: 'Nicht ausgewählt',
-    branding: 'WORLDS CHALLENGE • BESCHWÖRERKARTE',
-    victoryStat: '6-0 Ungeschlagen (Weltmeister 🏆)',
-    eliminated: 'Ausgeschieden',
-    sysShare: 'Teilen',
-    cardHover: 'Beschwörerkarte',
-    cardLoading: 'Karte wird erstellt...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: 'von',
-    matchDetails: 'MATCHDETAILS',
-    ctaQuestion: 'Glaubst du, dein Team kann die Besten der Geschichte schlagen und mich übertreffen?',
-    playFree: 'Spiele GRATIS hier:',
-    recordWin: () => '🏆 6-0 Rekord! Ich habe die Worlds Challenge mit einem legendären Team erobert.',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 Rekord! Ich kam weit, bevor ich ehrenvoll fiel in: ${roundName}.`,
-    recordFirstLoss: '⚔️ Ich bin im ersten Match gefallen, aber mein Team kommt stärker zurück.',
-  },
-  it: {
-    shareRecord: 'Condividi roster e record',
-    shareSub: 'Condividi il tuo team Worlds Challenge con una carta o un link diretto.',
-    method1: 'Condividi su WhatsApp o Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Scarica Carta dell’Evocatore',
-    passDesc: 'Carta virtuale con il tuo punteggio Worlds Challenge.',
-    downloadPNG: 'Scarica carta',
-    shareCard: 'Condividi carta',
-    vacant: 'Non selezionato',
-    branding: 'WORLDS CHALLENGE • CARTA DELL’EVOCATORE',
-    victoryStat: '6-0 Imbattuto (Campione del Mondo 🏆)',
-    eliminated: 'Eliminato',
-    sysShare: 'Condividi',
-    cardHover: 'Carta dell’Evocatore',
-    cardLoading: 'Generazione carta...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: 'di',
-    matchDetails: 'DETTAGLIO INCONTRI',
-    ctaQuestion: 'Pensi che il tuo team possa battere i migliori della storia e superarmi?',
-    playFree: 'Gioca GRATIS qui:',
-    recordWin: () => '🏆 Record 6-0! Ho conquistato il Worlds Challenge con un team leggendario.',
-    recordLoss: (wins, roundName) => `🥈 Record di ${wins}-1! Sono avanzato fino a cadere con onore in: ${roundName}.`,
-    recordFirstLoss: '⚔️ Sono caduto al primo incontro, ma il mio team tornerà più forte.',
-  },
-  pt: {
-    shareRecord: 'Partilhar roster e recorde',
-    shareSub: 'Partilha a tua equipa do Worlds Challenge com cartão ou link direto.',
-    method1: 'Partilhar no WhatsApp ou Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Descarregar Cartão do Invocador',
-    passDesc: 'Cartão virtual com a tua pontuação no Worlds Challenge.',
-    downloadPNG: 'Descarregar cartão',
-    shareCard: 'Partilhar cartão',
-    vacant: 'Não selecionado',
-    branding: 'WORLDS CHALLENGE • CARTÃO DO INVOCADOR',
-    victoryStat: '6-0 Invicto (Campeão do Mundo 🏆)',
-    eliminated: 'Eliminado',
-    sysShare: 'Partilhar',
-    cardHover: 'Cartão do Invocador',
-    cardLoading: 'A gerar cartão...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'TREIN',
-    from: 'de',
-    matchDetails: 'DETALHE DOS ENCONTROS',
-    ctaQuestion: 'Achas que a tua equipa consegue vencer os melhores da história e superar-me?',
-    playFree: 'Joga GRÁTIS aqui:',
-    recordWin: () => '🏆 Recorde 6-0! Conquistei o Worlds Challenge com uma equipa lendária.',
-    recordLoss: (wins, roundName) => `🥈 Recorde de ${wins}-1! Avancei no torneio até cair com honra em: ${roundName}.`,
-    recordFirstLoss: '⚔️ Caí no primeiro encontro, mas a minha equipa vai voltar mais forte.',
-  },
-  ru: {
-    shareRecord: 'Поделиться составом и рекордом',
-    shareSub: 'Поделитесь своей командой Worlds Challenge карточкой или ссылкой.',
-    method1: 'Поделиться в WhatsApp или Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: 'Скачать карту призывателя',
-    passDesc: 'Виртуальная карта с вашим счётом Worlds Challenge.',
-    downloadPNG: 'Скачать карту',
-    shareCard: 'Поделиться картой',
-    vacant: 'Не выбрано',
-    branding: 'WORLDS CHALLENGE • КАРТА ПРИЗЫВАТЕЛЯ',
-    victoryStat: '6-0 без поражений (Чемпион мира 🏆)',
-    eliminated: 'Выбыл',
-    sysShare: 'Поделиться',
-    cardHover: 'Карта призывателя',
-    cardLoading: 'Создание карты...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: 'из',
-    matchDetails: 'ДЕТАЛИ МАТЧЕЙ',
-    ctaQuestion: 'Думаешь, твоя команда сможет победить лучших в истории и превзойти меня?',
-    playFree: 'Играй БЕСПЛАТНО здесь:',
-    recordWin: () => '🏆 Рекорд 6-0! Я покорил Worlds Challenge с легендарной командой.',
-    recordLoss: (wins, roundName) => `🥈 Рекорд ${wins}-1! Я прошёл далеко и пал с честью на этапе: ${roundName}.`,
-    recordFirstLoss: '⚔️ Я выбыл в первом матче, но моя команда вернётся сильнее.',
-  },
-  ko: {
-    shareRecord: '로스터와 기록 공유',
-    shareSub: 'Worlds Challenge 팀을 카드나 직접 링크로 공유하세요.',
-    method1: 'WhatsApp 또는 Twitter/X로 공유',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: '소환사 카드 다운로드',
-    passDesc: 'Worlds Challenge 점수가 담긴 가상 카드입니다.',
-    downloadPNG: '카드 다운로드',
-    shareCard: '카드 공유',
-    vacant: '선택 안 됨',
-    branding: 'WORLDS CHALLENGE • 소환사 카드',
-    victoryStat: '6-0 무패 (월드 챔피언 🏆)',
-    eliminated: '탈락',
-    sysShare: '공유',
-    cardHover: '소환사 카드',
-    cardLoading: '카드 생성 중...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: '소속',
-    matchDetails: '경기 상세',
-    ctaQuestion: '당신의 팀이 역사상 최고의 팀들을 꺾고 저를 넘어설 수 있을까요?',
-    playFree: '무료로 플레이하기:',
-    recordWin: () => '🏆 6-0 기록! 전설적인 팀으로 Worlds Challenge를 정복했습니다.',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 기록! 토너먼트를 돌파했지만 명예롭게 쓰러진 곳: ${roundName}.`,
-    recordFirstLoss: '⚔️ 첫 경기에서 탈락했지만, 제 팀은 더 강하게 돌아올 준비가 됐습니다.',
-  },
-  zh: {
-    shareRecord: '分享阵容与战绩',
-    shareSub: '用卡片或直接链接分享你的 Worlds Challenge 队伍。',
-    method1: '分享到 WhatsApp 或 Twitter/X',
-    shareWA: 'WhatsApp',
-    shareX: 'Twitter / X',
-    method3: '下载召唤师卡片',
-    passDesc: '展示你 Worlds Challenge 分数的虚拟卡片。',
-    downloadPNG: '下载卡片',
-    shareCard: '分享卡片',
-    vacant: '未选择',
-    branding: 'WORLDS CHALLENGE • 召唤师卡片',
-    victoryStat: '6-0 不败（世界冠军 🏆）',
-    eliminated: '已淘汰',
-    sysShare: '分享',
-    cardHover: '召唤师卡片',
-    cardLoading: '正在生成卡片...',
-    title: '🏆 WORLDS CHALLENGE 🏆',
-    top: 'TOP',
-    jungle: 'JNG',
-    mid: 'MID',
-    adc: 'ADC',
-    support: 'SUP',
-    coach: 'COACH',
-    from: '来自',
-    matchDetails: '比赛详情',
-    ctaQuestion: '你觉得你的队伍能击败历史最强并超越我吗？',
-    playFree: '免费游玩：',
-    recordWin: () => '🏆 6-0 战绩！我用一支传奇队伍征服了 Worlds Challenge。',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 战绩！我一路晋级，最终光荣倒在：${roundName}。`,
-    recordFirstLoss: '⚔️ 我在第一场比赛中落败，但我的队伍会更强地回归。',
-  },
+};
+
+const SITE_URL = 'https://5vs5.pro';
+
+const ES: ShareTextSet = {
+  shareRecord: 'Compartir Roster y Récord',
+  shareSub: 'Comparte tu equipo del Worlds Challenge con una tarjeta o enlace directo.',
+  method1: 'Compartir en WhatsApp o Twitter/X',
+  shareWA: 'WhatsApp',
+  shareX: 'Twitter / X',
+  method3: 'Descargar Tarjeta del Invocador',
+  passDesc: 'Tarjeta virtual de tu puntuación en Worlds Challenge.',
+  downloadPNG: 'Descargar',
+  shareCard: 'Compartir',
+  vacant: 'Sin seleccionar',
+  branding: 'WORLDS CHALLENGE • TARJETA DEL INVOCADOR',
+  victoryStat: '6-0 Invicto (Campeón del Mundo 🏆)',
+  eliminated: 'Eliminado',
+  sysShare: 'Compartir',
+  cardHover: 'Tarjeta del Invocador',
+  cardLoading: 'Generando tarjeta...',
+  title: '🏆 WORLDS CHALLENGE - LEAGUE OF LEGENDS 🏆',
+  top: 'TOP',
+  jungle: 'JNG',
+  mid: 'MID',
+  adc: 'ADC',
+  support: 'SUP',
+  coach: 'ENTR',
+  from: 'de',
+  ctaQuestion: '¿Crees que tu equipo puede vencer a los mejores de la historia y superarme?',
+  playFree: 'Juega GRATIS aquí:',
+  recordWin: () => '🏆 ¡Récord de 6-0! Conseguí conquistar el Worlds Challenge con un equipo de leyenda.',
+  recordLoss: (wins, roundName) => `🥈 ¡Récord de ${wins}-1! Conseguí superar las eliminatorias hasta caer con honor de pie en: ${roundName}.`,
+  recordFirstLoss: '⚔️ Caí en el primer encuentro, pero mi equipo ya está listo para volver más fuerte.',
+};
+
+const EN: ShareTextSet = {
+  shareRecord: 'Share Roster & Record',
+  shareSub: 'Share your Worlds Challenge team with a card or direct link.',
+  method1: 'Share on WhatsApp or Twitter/X',
+  shareWA: 'WhatsApp',
+  shareX: 'Twitter / X',
+  method3: 'Download Summoner Card',
+  passDesc: 'Virtual card with your Worlds Challenge score.',
+  downloadPNG: 'Download',
+  shareCard: 'Share',
+  vacant: 'Vacant',
+  branding: 'WORLDS CHALLENGE • SUMMONER CARD',
+  victoryStat: '6-0 Undefeated (World Champion 🏆)',
+  eliminated: 'Eliminated',
+  sysShare: 'Share',
+  cardHover: 'Summoner Card',
+  cardLoading: 'Generating card...',
+  title: '🏆 WORLDS CHALLENGE - LEAGUE OF LEGENDS 🏆',
+  top: 'TOP',
+  jungle: 'JNG',
+  mid: 'MID',
+  adc: 'ADC',
+  support: 'SUP',
+  coach: 'COACH',
+  from: 'from',
+  ctaQuestion: 'Do you think your team can beat the best in history and surpass me?',
+  playFree: 'Play FREE here:',
+  recordWin: () => '🏆 6-0 record! I conquered the Worlds Challenge with a legendary team.',
+  recordLoss: (wins, roundName) => `🥈 ${wins}-1 record! I advanced through the bracket and fell with honor at: ${roundName}.`,
+  recordFirstLoss: '⚔️ I fell in the opening match, but my team is ready to come back stronger.',
+};
+
+const SHARE_LOCALES: Record<Language, ShareTextSet> = {
+  es: ES,
+  en: EN,
+  fr: { ...EN, shareRecord: 'Partager le roster et le record', method1: 'Partager sur WhatsApp ou Twitter/X', method3: 'Télécharger la Carte d’Invocateur', downloadPNG: 'Télécharger', shareCard: 'Partager', sysShare: 'Partager', from: 'de' },
+  de: { ...EN, shareRecord: 'Kader und Rekord teilen', method1: 'Auf WhatsApp oder Twitter/X teilen', method3: 'Beschwörerkarte herunterladen', downloadPNG: 'Download', shareCard: 'Teilen', sysShare: 'Teilen', from: 'von' },
+  it: { ...EN, shareRecord: 'Condividi roster e record', method1: 'Condividi su WhatsApp o Twitter/X', method3: 'Scarica Carta dell’Evocatore', downloadPNG: 'Scarica', shareCard: 'Condividi', sysShare: 'Condividi', from: 'di' },
+  pt: { ...ES, shareRecord: 'Partilhar roster e recorde', method1: 'Partilhar no WhatsApp ou Twitter/X', method3: 'Descarregar Cartão do Invocador', downloadPNG: 'Descarregar', shareCard: 'Partilhar', sysShare: 'Partilhar', coach: 'TREIN', from: 'de' },
+  ru: { ...EN, shareRecord: 'Поделиться составом и рекордом', method1: 'Поделиться в WhatsApp или Twitter/X', method3: 'Скачать карту призывателя', downloadPNG: 'Скачать', shareCard: 'Поделиться', sysShare: 'Поделиться', from: 'из' },
+  ko: { ...EN, shareRecord: '로스터와 기록 공유', method1: 'WhatsApp 또는 Twitter/X로 공유', method3: '소환사 카드 다운로드', downloadPNG: '다운로드', shareCard: '공유', sysShare: '공유', from: '소속' },
+  zh: { ...EN, shareRecord: '分享阵容与战绩', method1: '分享到 WhatsApp 或 Twitter/X', method3: '下载召唤师卡片', downloadPNG: '下载', shareCard: '分享', sysShare: '分享', from: '来自' },
 };
 
 export default function ShareWidget({
@@ -376,7 +162,6 @@ export default function ShareWidget({
 
   const getSlotText = (slot: TeamDraft[keyof TeamDraft]) => {
     if (!slot.player) return activeDict.vacant;
-
     const teamName = slot.fromTeam?.name || 'Unknown Team';
     const teamYear = slot.fromTeam?.year || '';
     return `${slot.player.name} (${slot.player.rating} OVR) ${activeDict.from} ${teamName} '${teamYear}`;
@@ -385,13 +170,8 @@ export default function ShareWidget({
   const getRoundReachedText = () => {
     const wins = matchHistory.filter(m => m.result === 'W').length;
 
-    if (isWin) {
-      return activeDict.recordWin(wins);
-    }
-
-    if (wins === 0) {
-      return activeDict.recordFirstLoss;
-    }
+    if (isWin) return activeDict.recordWin(wins);
+    if (wins === 0) return activeDict.recordFirstLoss;
 
     const limitRound = matchHistory.length || roundIndex + 1;
     let fellRoundName = '';
@@ -405,17 +185,7 @@ export default function ShareWidget({
     return activeDict.recordLoss(wins, fellRoundName);
   };
 
-  const getCompactMatchDetails = () => {
-    if (!matchHistory.length) return '';
-
-    const resultIcons = matchHistory
-      .map((m) => (m.result === 'W' ? '✅' : '❌'))
-      .join(' ');
-
-    return `\n⚔️ ${activeDict.matchDetails}: ${resultIcons}`;
-  };
-
-  const getShareText = () => {
+  const getFullShareText = () => {
     const dTop = getSlotText(draft.top);
     const dJungle = getSlotText(draft.jungle);
     const dMid = getSlotText(draft.mid);
@@ -431,19 +201,39 @@ ${getRoundReachedText()}
 🔮 ${activeDict.mid}: ${dMid}
 🎯 ${activeDict.adc}: ${dAdc}
 ⭐ ${activeDict.support}: ${dSup}
-🧠 ${activeDict.coach}: ${dCoach}${getCompactMatchDetails()}
+🧠 ${activeDict.coach}: ${dCoach}
 
 🎮 ${activeDict.ctaQuestion} ${activeDict.playFree}
 👉 ${SITE_URL}`;
   };
 
+  const getTwitterShareText = () => {
+    return `${activeDict.title}
+${getRoundReachedText()}
+
+🎮 ${activeDict.ctaQuestion} ${activeDict.playFree}
+👉 ${SITE_URL}`;
+  };
+
+  const getCardShareText = () => {
+    return `${activeDict.title}
+
+${getRoundReachedText()}
+
+
+
+🎮 ${activeDict.ctaQuestion} ${activeDict.playFree}
+
+👉 ${SITE_URL}`;
+  };
+
   const handleShareWhatsApp = () => {
-    const encoded = encodeURIComponent(getShareText());
+    const encoded = encodeURIComponent(getFullShareText());
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
   };
 
   const handleShareTwitter = () => {
-    const encoded = encodeURIComponent(getShareText());
+    const encoded = encodeURIComponent(getTwitterShareText());
     window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank');
   };
 
@@ -552,14 +342,12 @@ ${getRoundReachedText()}
 
     for (let r = 0; r < 6; r++) {
       const mResult = matchHistory.find(m => m.roundIndex === r);
-
       ctx.beginPath();
       ctx.arc(startX + r * stepGap, startY, 11, 0, Math.PI * 2);
       ctx.fillStyle = mResult ? (mResult.result === 'W' ? '#004a3e' : '#da4848') : '#010a13';
       ctx.fill();
       ctx.strokeStyle = mResult ? (mResult.result === 'W' ? '#00c8c8' : '#da4848') : '#c8aa6e';
       ctx.stroke();
-
       ctx.fillStyle = mResult ? (mResult.result === 'W' ? '#00c8c8' : '#da4848') : '#5c5a4d';
       ctx.font = 'bold 9px "Inter", sans-serif';
       ctx.fillText(mResult ? mResult.result : '-', startX + r * stepGap - 3, startY + 28);
@@ -570,12 +358,12 @@ ${getRoundReachedText()}
     const rowHeight = 78;
 
     const rolesList: { key: keyof TeamDraft; label: string; icon: string }[] = [
-      { key: 'top', label: 'TOP', icon: '🛡️' },
-      { key: 'jungle', label: 'JNG', icon: '⚔️' },
-      { key: 'mid', label: 'MID', icon: '🔮' },
-      { key: 'adc', label: 'ADC', icon: '🎯' },
-      { key: 'support', label: 'SUP', icon: '⭐' },
-      { key: 'coach', label: 'COACH', icon: '🧠' },
+      { key: 'top', label: activeDict.top, icon: '🛡️' },
+      { key: 'jungle', label: activeDict.jungle, icon: '⚔️' },
+      { key: 'mid', label: activeDict.mid, icon: '🔮' },
+      { key: 'adc', label: activeDict.adc, icon: '🎯' },
+      { key: 'support', label: activeDict.support, icon: '⭐' },
+      { key: 'coach', label: activeDict.coach, icon: '🧠' },
     ];
 
     rolesList.forEach((role, idx) => {
@@ -617,7 +405,6 @@ ${getRoundReachedText()}
         ctx.fillStyle = '#a09b8c';
         ctx.font = 'medium 11px "Inter", sans-serif';
         ctx.fillText(`${slot.fromTeam.name} (${slot.fromTeam.year})`, xRightStart + 500, yPos + 24);
-
         ctx.fillStyle = '#c8aa6e';
         ctx.font = 'bold 10px "Inter", sans-serif';
         ctx.fillText(slot.fromTeam.region, xRightStart + 500, yPos + 40);
@@ -632,7 +419,6 @@ ${getRoundReachedText()}
     const dataUrl = canvas.toDataURL('image/png');
     setCanvasDataUrl(dataUrl);
     setGeneratingImage(false);
-
     return dataUrl;
   };
 
@@ -642,7 +428,6 @@ ${getRoundReachedText()}
 
   const handleDownloadImage = () => {
     const activeDataUrl = canvasDataUrl || generateCanvasImage();
-
     if (activeDataUrl) {
       const link = document.createElement('a');
       link.download = `Worlds_Challenge_Summoner_Card_${teamScore}_OVR.png`;
@@ -654,7 +439,6 @@ ${getRoundReachedText()}
   const handleShareImage = async () => {
     try {
       const activeDataUrl = canvasDataUrl || generateCanvasImage();
-
       if (!activeDataUrl) {
         handleDownloadImage();
         return;
@@ -662,17 +446,12 @@ ${getRoundReachedText()}
 
       const response = await fetch(activeDataUrl);
       const blob = await response.blob();
-
-      const file = new File(
-        [blob],
-        `Worlds_Challenge_Summoner_Card_${teamScore}_OVR.png`,
-        { type: 'image/png' }
-      );
+      const file = new File([blob], `Worlds_Challenge_Summoner_Card_${teamScore}_OVR.png`, { type: 'image/png' });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'Worlds Challenge',
-          text: getShareText(),
+          text: getCardShareText(),
           files: [file],
         });
         return;
@@ -681,7 +460,7 @@ ${getRoundReachedText()}
       if (navigator.share) {
         await navigator.share({
           title: 'Worlds Challenge',
-          text: getShareText(),
+          text: getCardShareText(),
           url: SITE_URL,
         });
         return;
@@ -703,21 +482,15 @@ ${getRoundReachedText()}
           <Share2 className="w-5 h-5 text-[#c8aa6e]" />
         </div>
         <div>
-          <h3 className="text-base font-black text-[#f0e6d2] uppercase tracking-tight">
-            {activeDict.shareRecord}
-          </h3>
-          <p className="text-[11px] text-[#a09b8c]">
-            {activeDict.shareSub}
-          </p>
+          <h3 className="text-base font-black text-[#f0e6d2] uppercase tracking-tight">{activeDict.shareRecord}</h3>
+          <p className="text-[11px] text-[#a09b8c]">{activeDict.shareSub}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
         <div className="flex flex-col justify-between space-y-4">
           <div className="space-y-3">
-            <span className="text-[10px] font-bold text-[#a09b8c] uppercase tracking-wider block">
-              {activeDict.method1}
-            </span>
+            <span className="text-[10px] font-bold text-[#a09b8c] uppercase tracking-wider block">{activeDict.method1}</span>
 
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -746,7 +519,7 @@ ${getRoundReachedText()}
               onClick={() => {
                 navigator.share({
                   title: 'Worlds Challenge',
-                  text: getShareText(),
+                  text: getFullShareText(),
                   url: SITE_URL,
                 }).catch(err => console.log('Share error:', err));
               }}
@@ -760,12 +533,8 @@ ${getRoundReachedText()}
 
         <div className="bg-[#010a13] border border-[#c8aa6e]/10 p-3.5 rounded-xl flex flex-col justify-between items-center space-y-3.5">
           <div className="w-full text-center space-y-1">
-            <span className="text-[10px] font-bold text-[#c8aa6e] uppercase tracking-wider block">
-              {activeDict.method3}
-            </span>
-            <p className="text-[9px] text-[#a09b8c]">
-              {activeDict.passDesc}
-            </p>
+            <span className="text-[10px] font-bold text-[#c8aa6e] uppercase tracking-wider block">{activeDict.method3}</span>
+            <p className="text-[9px] text-[#a09b8c]">{activeDict.passDesc}</p>
           </div>
 
           <canvas ref={canvasRef} className="hidden" />
@@ -791,12 +560,12 @@ ${getRoundReachedText()}
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+          <div className="grid grid-cols-2 gap-2 w-full">
             <button
               id="share-card-image-btn"
               onClick={handleShareImage}
               disabled={generatingImage || !canvasDataUrl}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#010a13] hover:bg-[#1e2328] text-[#c8aa6e] border border-[#c8aa6e]/25 text-xs font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#010a13] hover:bg-[#1e2328] text-[#c8aa6e] border border-[#c8aa6e]/25 text-[11px] font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
             >
               <Share2 className="w-3.5 h-3.5" />
               {activeDict.shareCard}
@@ -806,7 +575,7 @@ ${getRoundReachedText()}
               id="download-share-card-btn"
               onClick={handleDownloadImage}
               disabled={generatingImage || !canvasDataUrl}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] text-xs font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] text-[11px] font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               {activeDict.downloadPNG}
