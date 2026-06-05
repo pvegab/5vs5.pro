@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 app.get("/api/leaderboard", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM leaderboard ORDER BY score DESC, wins DESC LIMIT 100"
+      "SELECT id, name, countryCode, flag, record, kills, deaths, score, gameMode, ovr, date FROM leaderboard ORDER BY score DESC, kills DESC LIMIT 100"
     );
 
     res.json(rows);
@@ -37,24 +37,38 @@ app.get("/api/leaderboard", async (req, res) => {
 
 app.post("/api/leaderboard", async (req, res) => {
   try {
-    const { username, team_name, players, coach, score, wins, losses } = req.body;
+    const {
+      name,
+      countryCode,
+      flag,
+      record,
+      kills,
+      deaths,
+      score,
+      gameMode,
+      ovr,
+      date,
+    } = req.body;
 
-    if (!username || !players || score === undefined) {
+    if (!name || score === undefined) {
       return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
     const [result] = await db.query(
-      `INSERT INTO leaderboard 
-      (username, team_name, players, coach, score, wins, losses) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO leaderboard
+      (name, countryCode, flag, record, kills, deaths, score, gameMode, ovr, date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        username,
-        team_name || null,
-        JSON.stringify(players),
-        coach || null,
+        name,
+        countryCode || null,
+        flag || null,
+        record || null,
+        kills || 0,
+        deaths || 0,
         score,
-        wins || 0,
-        losses || 0,
+        gameMode || "normal",
+        ovr || 0,
+        date || new Date().toISOString().split("T")[0],
       ]
     );
 
