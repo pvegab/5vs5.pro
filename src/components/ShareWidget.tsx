@@ -41,6 +41,7 @@ const SHARE_LOCALES: Record<Language, {
   method3: string;
   passDesc: string;
   downloadPNG: string;
+  shareCard: string;
   vacant: string;
   branding: string;
   victoryStat: string;
@@ -57,8 +58,6 @@ const SHARE_LOCALES: Record<Language, {
   coach: string;
   from: string;
   matchDetails: string;
-  win: string;
-  loss: string;
   ctaQuestion: string;
   playFree: string;
   recordWin: (wins: number) => string;
@@ -73,7 +72,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Descargar Tarjeta del Invocador',
     passDesc: 'Tarjeta virtual de tu puntuación en Worlds Challenge.',
-    downloadPNG: 'Descargar Tarjeta del Invocador',
+    downloadPNG: 'Descargar Tarjeta',
+    shareCard: 'Compartir Tarjeta',
     vacant: 'Sin seleccionar',
     branding: 'WORLDS CHALLENGE • TARJETA DEL INVOCADOR',
     victoryStat: '6-0 Invicto (Campeón del Mundo 🏆)',
@@ -90,8 +90,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'ENTR',
     from: 'de',
     matchDetails: 'DETALLE DE ENCUENTROS',
-    win: 'Victoria',
-    loss: 'Derrota',
     ctaQuestion: '¿Crees que tu equipo puede vencer a los mejores de la historia y superarme?',
     playFree: 'Juega GRATIS aquí:',
     recordWin: () => '🏆 ¡Récord de 6-0! Conseguí conquistar el Worlds Challenge con un equipo de leyenda.',
@@ -106,7 +104,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Download Summoner Card',
     passDesc: 'Virtual card with your Worlds Challenge score.',
-    downloadPNG: 'Download Summoner Card',
+    downloadPNG: 'Download Card',
+    shareCard: 'Share Card',
     vacant: 'Vacant',
     branding: 'WORLDS CHALLENGE • SUMMONER CARD',
     victoryStat: '6-0 Undefeated (World Champion 🏆)',
@@ -123,8 +122,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: 'from',
     matchDetails: 'MATCH DETAILS',
-    win: 'Win',
-    loss: 'Loss',
     ctaQuestion: 'Do you think your team can beat the best in history and surpass me?',
     playFree: 'Play FREE here:',
     recordWin: () => '🏆 6-0 record! I conquered the Worlds Challenge with a legendary team.',
@@ -139,7 +136,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Télécharger la Carte d’Invocateur',
     passDesc: 'Carte virtuelle avec votre score Worlds Challenge.',
-    downloadPNG: 'Télécharger la Carte d’Invocateur',
+    downloadPNG: 'Télécharger la carte',
+    shareCard: 'Partager la carte',
     vacant: 'Non sélectionné',
     branding: 'WORLDS CHALLENGE • CARTE D’INVOCATEUR',
     victoryStat: '6-0 Invaincu (Champion du Monde 🏆)',
@@ -156,8 +154,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: 'de',
     matchDetails: 'DÉTAIL DES MATCHS',
-    win: 'Victoire',
-    loss: 'Défaite',
     ctaQuestion: 'Penses-tu que ton équipe peut battre les meilleurs de l’histoire et me dépasser ?',
     playFree: 'Joue GRATUITEMENT ici :',
     recordWin: () => '🏆 Record 6-0 ! J’ai conquis le Worlds Challenge avec une équipe légendaire.',
@@ -172,7 +168,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Beschwörerkarte herunterladen',
     passDesc: 'Virtuelle Karte mit deinem Worlds-Challenge-Score.',
-    downloadPNG: 'Beschwörerkarte herunterladen',
+    downloadPNG: 'Karte herunterladen',
+    shareCard: 'Karte teilen',
     vacant: 'Nicht ausgewählt',
     branding: 'WORLDS CHALLENGE • BESCHWÖRERKARTE',
     victoryStat: '6-0 Ungeschlagen (Weltmeister 🏆)',
@@ -189,8 +186,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: 'von',
     matchDetails: 'MATCHDETAILS',
-    win: 'Sieg',
-    loss: 'Niederlage',
     ctaQuestion: 'Glaubst du, dein Team kann die Besten der Geschichte schlagen und mich übertreffen?',
     playFree: 'Spiele GRATIS hier:',
     recordWin: () => '🏆 6-0 Rekord! Ich habe die Worlds Challenge mit einem legendären Team erobert.',
@@ -205,7 +200,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Scarica Carta dell’Evocatore',
     passDesc: 'Carta virtuale con il tuo punteggio Worlds Challenge.',
-    downloadPNG: 'Scarica Carta dell’Evocatore',
+    downloadPNG: 'Scarica carta',
+    shareCard: 'Condividi carta',
     vacant: 'Non selezionato',
     branding: 'WORLDS CHALLENGE • CARTA DELL’EVOCATORE',
     victoryStat: '6-0 Imbattuto (Campione del Mondo 🏆)',
@@ -222,8 +218,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: 'di',
     matchDetails: 'DETTAGLIO INCONTRI',
-    win: 'Vittoria',
-    loss: 'Sconfitta',
     ctaQuestion: 'Pensi che il tuo team possa battere i migliori della storia e superarmi?',
     playFree: 'Gioca GRATIS qui:',
     recordWin: () => '🏆 Record 6-0! Ho conquistato il Worlds Challenge con un team leggendario.',
@@ -238,7 +232,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Descarregar Cartão do Invocador',
     passDesc: 'Cartão virtual com a tua pontuação no Worlds Challenge.',
-    downloadPNG: 'Descarregar Cartão do Invocador',
+    downloadPNG: 'Descarregar cartão',
+    shareCard: 'Partilhar cartão',
     vacant: 'Não selecionado',
     branding: 'WORLDS CHALLENGE • CARTÃO DO INVOCADOR',
     victoryStat: '6-0 Invicto (Campeão do Mundo 🏆)',
@@ -255,8 +250,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'TREIN',
     from: 'de',
     matchDetails: 'DETALHE DOS ENCONTROS',
-    win: 'Vitória',
-    loss: 'Derrota',
     ctaQuestion: 'Achas que a tua equipa consegue vencer os melhores da história e superar-me?',
     playFree: 'Joga GRÁTIS aqui:',
     recordWin: () => '🏆 Recorde 6-0! Conquistei o Worlds Challenge com uma equipa lendária.',
@@ -271,7 +264,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: 'Скачать карту призывателя',
     passDesc: 'Виртуальная карта с вашим счётом Worlds Challenge.',
-    downloadPNG: 'Скачать карту призывателя',
+    downloadPNG: 'Скачать карту',
+    shareCard: 'Поделиться картой',
     vacant: 'Не выбрано',
     branding: 'WORLDS CHALLENGE • КАРТА ПРИЗЫВАТЕЛЯ',
     victoryStat: '6-0 без поражений (Чемпион мира 🏆)',
@@ -288,8 +282,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: 'из',
     matchDetails: 'ДЕТАЛИ МАТЧЕЙ',
-    win: 'Победа',
-    loss: 'Поражение',
     ctaQuestion: 'Думаешь, твоя команда сможет победить лучших в истории и превзойти меня?',
     playFree: 'Играй БЕСПЛАТНО здесь:',
     recordWin: () => '🏆 Рекорд 6-0! Я покорил Worlds Challenge с легендарной командой.',
@@ -304,7 +296,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: '소환사 카드 다운로드',
     passDesc: 'Worlds Challenge 점수가 담긴 가상 카드입니다.',
-    downloadPNG: '소환사 카드 다운로드',
+    downloadPNG: '카드 다운로드',
+    shareCard: '카드 공유',
     vacant: '선택 안 됨',
     branding: 'WORLDS CHALLENGE • 소환사 카드',
     victoryStat: '6-0 무패 (월드 챔피언 🏆)',
@@ -321,8 +314,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: '소속',
     matchDetails: '경기 상세',
-    win: '승리',
-    loss: '패배',
     ctaQuestion: '당신의 팀이 역사상 최고의 팀들을 꺾고 저를 넘어설 수 있을까요?',
     playFree: '무료로 플레이하기:',
     recordWin: () => '🏆 6-0 기록! 전설적인 팀으로 Worlds Challenge를 정복했습니다.',
@@ -337,7 +328,8 @@ const SHARE_LOCALES: Record<Language, {
     shareX: 'Twitter / X',
     method3: '下载召唤师卡片',
     passDesc: '展示你 Worlds Challenge 分数的虚拟卡片。',
-    downloadPNG: '下载召唤师卡片',
+    downloadPNG: '下载卡片',
+    shareCard: '分享卡片',
     vacant: '未选择',
     branding: 'WORLDS CHALLENGE • 召唤师卡片',
     victoryStat: '6-0 不败（世界冠军 🏆）',
@@ -354,8 +346,6 @@ const SHARE_LOCALES: Record<Language, {
     coach: 'COACH',
     from: '来自',
     matchDetails: '比赛详情',
-    win: '胜利',
-    loss: '失败',
     ctaQuestion: '你觉得你的队伍能击败历史最强并超越我吗？',
     playFree: '免费游玩：',
     recordWin: () => '🏆 6-0 战绩！我用一支传奇队伍征服了 Worlds Challenge。',
@@ -457,14 +447,17 @@ ${getRoundReachedText()}
     window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank');
   };
 
-  const generateCanvasImage = () => {
+  const generateCanvasImage = (): string | null => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
 
     setGeneratingImage(true);
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      setGeneratingImage(false);
+      return null;
+    }
 
     const width = 1140;
     const height = 600;
@@ -491,7 +484,7 @@ ${getRoundReachedText()}
     for (let y = 0; y < height; y += size) {
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(width, height);
+      ctx.lineTo(width, y);
       ctx.stroke();
     }
 
@@ -639,6 +632,8 @@ ${getRoundReachedText()}
     const dataUrl = canvas.toDataURL('image/png');
     setCanvasDataUrl(dataUrl);
     setGeneratingImage(false);
+
+    return dataUrl;
   };
 
   useEffect(() => {
@@ -646,15 +641,56 @@ ${getRoundReachedText()}
   }, [draft, teamScore, synergyDetails, matchHistory, lang]);
 
   const handleDownloadImage = () => {
-    if (!canvasDataUrl && canvasRef.current) {
-      generateCanvasImage();
-    }
+    const activeDataUrl = canvasDataUrl || generateCanvasImage();
 
-    if (canvasDataUrl) {
+    if (activeDataUrl) {
       const link = document.createElement('a');
       link.download = `Worlds_Challenge_Summoner_Card_${teamScore}_OVR.png`;
-      link.href = canvasDataUrl;
+      link.href = activeDataUrl;
       link.click();
+    }
+  };
+
+  const handleShareImage = async () => {
+    try {
+      const activeDataUrl = canvasDataUrl || generateCanvasImage();
+
+      if (!activeDataUrl) {
+        handleDownloadImage();
+        return;
+      }
+
+      const response = await fetch(activeDataUrl);
+      const blob = await response.blob();
+
+      const file = new File(
+        [blob],
+        `Worlds_Challenge_Summoner_Card_${teamScore}_OVR.png`,
+        { type: 'image/png' }
+      );
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Worlds Challenge',
+          text: getShareText(),
+          files: [file],
+        });
+        return;
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Worlds Challenge',
+          text: getShareText(),
+          url: SITE_URL,
+        });
+        return;
+      }
+
+      handleDownloadImage();
+    } catch (err) {
+      console.log('Image share error:', err);
+      handleDownloadImage();
     }
   };
 
@@ -755,15 +791,27 @@ ${getRoundReachedText()}
             </div>
           )}
 
-          <button
-            id="download-share-card-btn"
-            onClick={handleDownloadImage}
-            disabled={generatingImage || !canvasDataUrl}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] text-xs font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
-          >
-            <Download className="w-3.5 h-3.5" />
-            {activeDict.downloadPNG}
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+            <button
+              id="share-card-image-btn"
+              onClick={handleShareImage}
+              disabled={generatingImage || !canvasDataUrl}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#010a13] hover:bg-[#1e2328] text-[#c8aa6e] border border-[#c8aa6e]/25 text-xs font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              {activeDict.shareCard}
+            </button>
+
+            <button
+              id="download-share-card-btn"
+              onClick={handleDownloadImage}
+              disabled={generatingImage || !canvasDataUrl}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] text-xs font-black uppercase rounded-lg cursor-pointer disabled:opacity-50 transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {activeDict.downloadPNG}
+            </button>
+          </div>
         </div>
       </div>
     </div>
