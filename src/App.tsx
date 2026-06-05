@@ -51,41 +51,46 @@ export default function App() {
 
   const activeTrans = TRANSLATIONS[language] || TRANSLATIONS['es'];
 
-  // Calculate statistics & synergies (matching only Top, Jungle, Mid, ADC, Support and Coach)
+  // Calculate statistics & synergies (Top, Jungle, Mid, ADC, Support and Coach)
   const getSynergiesAndScore = () => {
     const slots = Object.values(draft) as SelectedSlot[];
     const activeMembers = slots.filter(s => s.player !== null);
-    
+
     if (activeMembers.length === 0) {
       return { score: 0, regionBonus: 0, teamBonus: 0, yearBonus: 0, champBonus: 0, coachBonus: 0, activeSynergies: [], total: 0 };
     }
 
-    // Players elements
     const playersOnly = slots.filter(s => s.player !== null && s.player.role !== 'coach');
     const coachOnly = draft.coach.player;
 
-    // 1. Base Score calculation
-    let playersSum = 0;
-    playersOnly.forEach(p => {
-      playersSum += p.player?.rating || 0;
-    });
-    
-    // Average or weighted rating of selected players only
-    const baseAvg = playersOnly.length > 0 ? (playersSum / playersOnly.length) : 70;
-    
-    // Coach factor: add up points based on coach rating
-    let coachInfluence = 0;
-    if (coachOnly) {
-      coachInfluence = (coachOnly.rating - 70) * 0.15; // e.g. 90 coach adds 3.0 points
-    }
-
-    // 2. Synergy mechanics
     let regionBonus = 0;
     let teamBonus = 0;
     let yearBonus = 0;
     let champBonus = 0;
     let coachBonus = 0;
     const activeSynergies: string[] = [];
+
+    const normalizeChampionName = (champion?: string | null) => {
+      return String(champion || '')
+        .trim()
+        .replace(/’/g, "'")
+        .replace(/\s+/g, ' ');
+    };
+
+    const champions = playersOnly
+      .map(p => normalizeChampionName(p.player?.signatureChampion))
+      .filter(Boolean);
+
+    const uniqueChampions = Array.from(new Set(champions));
+
+    const hasChampion = (champion: string) => uniqueChampions.includes(champion);
+    const countMatches = (group: string[]) => uniqueChampions.filter(c => group.includes(c)).length;
+
+    const addChampionSynergy = (name: string, points: number) => {
+      if (points <= 0) return;
+      champBonus += points;
+      activeSynergies.push(name);
+    };
 
     const regionsList = playersOnly.map(p => p.fromTeam?.region).filter(Boolean) as Region[];
     const franchiseList = playersOnly.map(p => {
@@ -94,118 +99,331 @@ export default function App() {
     }).filter(Boolean);
     const yearFranchiseKeys = playersOnly.map(p => `${p.fromTeam?.name}-${p.fromTeam?.year}`).filter(Boolean);
 
-    // Context counters
     const regCounts: Record<string, number> = {};
     regionsList.forEach(r => regCounts[r] = (regCounts[r] || 0) + 1);
-    
+
     const franchiseCounts: Record<string, number> = {};
     franchiseList.forEach(f => franchiseCounts[f] = (franchiseCounts[f] || 0) + 1);
 
     const yearFrCounts: Record<string, number> = {};
     yearFranchiseKeys.forEach(k => yearFrCounts[k] = (yearFrCounts[k] || 0) + 1);
 
-    // Apply Region Bonuses
+    // Region bonuses: competitive region only. This is separate from champion/lore chemistry.
     Object.entries(regCounts).forEach(([region, count]) => {
       if (count >= 5) {
         regionBonus = Math.max(regionBonus, 6.5);
         activeSynergies.push(`${region} Region (${count})`);
-      }
-      else if (count >= 3) {
+      } else if (count >= 3) {
         regionBonus = Math.max(regionBonus, 2.5);
         activeSynergies.push(`${region} Region (${count})`);
       }
     });
 
-    // Apply Franchise/Team Bonuses
+    // Franchise/team bonuses: real esports organization only. This is separate from champion/lore chemistry.
     Object.entries(franchiseCounts).forEach(([franchise, count]) => {
       let b = 0;
       if (count >= 4) b = 8;
       else if (count >= 3) b = 5;
       else if (count >= 2) b = 2.5;
-      
+
       if (b > 0) {
         teamBonus = Math.max(teamBonus, b);
         activeSynergies.push(`${franchise} Franchise (${count})`);
       }
     });
 
-    // Apply Year & Team matched (Perfect Chemistry)
+    // Exact year + team bonuses: historic roster chemistry only. This is separate from champion/lore chemistry.
     Object.entries(yearFrCounts).forEach(([yearFranchise, count]) => {
       let b = 0;
       if (count >= 5) b = 10;
       else if (count >= 4) b = 8;
       else if (count >= 3) b = 5;
       else if (count >= 2) b = 2.5;
-      
+
       if (b > 0) {
         yearBonus = Math.max(yearBonus, b);
         activeSynergies.push(`Perfect Chemistry: ${yearFranchise} (${count})`);
       }
     });
 
-    // Champion Synergies
-    const champions = playersOnly.map(p => p.player?.signatureChampion).filter(Boolean) as string[];
-    
-    const champGroups = {
-      'Knockup Bros': ['Yasuo', 'Gragas', 'Lee Sin', 'Alistar', 'Rakan', 'Janna', 'Nautilus', 'Wukong', 'Ornn', 'Jarvan IV', 'Sion', 'Xin Zhao', 'Malphite'],
-      'Freljord Forces': ['Ashe', 'Sejuani', 'Braum', 'Ornn', 'Olaf', 'Lissandra', 'Trundle', 'Anivia'],
-      'Ionia Strike': ['Lee Sin', 'Yasuo', 'Irelia', 'Shen', 'Akali', 'Ahri', 'Karma', 'Xayah', 'Rakan', 'Zed', 'Kennen', 'Syndra'],
-      'Void Terror': ['Kha\'Zix', 'Kog\'Maw', 'Rek\'Sai', 'Cho\'Gath', 'Bel\'Veth', 'Kai\'Sa', 'Malzahar', 'Kassadin'],
-      'Tech & Chem': ['Jinx', 'Vi', 'Caitlyn', 'Ekko', 'Camille', 'Viktor', 'Ezreal', 'Singed', 'Renata Glasc'],
-      'Shadow Isles': ['Thresh', 'Hecarim', 'Karthus', 'Kalista', 'Viego'],
-      'Noxian Might': ['Draven', 'Darius', 'Swain', 'Katarina', 'Sion', 'Talon', 'LeBlanc']
+    // Champion and composition synergies.
+    // These bonuses are based only on signature champions, lore links and in-game composition style.
+    // They deliberately do not use esports region, franchise or exact team/year.
+    const loreGroups: Record<string, { champions: string[]; pointsByCount: Record<number, number> }> = {
+      'Ionia Strike': {
+        champions: ['Lee Sin', 'Yasuo', 'Yone', 'Irelia', 'Shen', 'Akali', 'Ahri', 'Karma', 'Xayah', 'Rakan', 'Zed', 'Kennen', 'Syndra', 'Varus', 'Sett', 'Wukong', 'Jhin'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Freljord Forces': {
+        champions: ['Ashe', 'Sejuani', 'Braum', 'Ornn', 'Olaf', 'Lissandra', 'Trundle', 'Anivia', 'Volibear', 'Tryndamere', 'Nunu & Willump', 'Gnar'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Void Terror': {
+        champions: ["Kha'Zix", "Kog'Maw", "Rek'Sai", "Cho'Gath", "Bel'Veth", "Kai'Sa", 'Malzahar', 'Kassadin', "Vel'Koz"],
+        pointsByCount: { 2: 1.2, 3: 2.6, 4: 4, 5: 5 },
+      },
+      'Piltover & Zaun': {
+        champions: ['Jinx', 'Vi', 'Caitlyn', 'Ekko', 'Camille', 'Viktor', 'Ezreal', 'Singed', 'Renata Glasc', 'Jayce', 'Orianna', 'Zeri', 'Heimerdinger', 'Blitzcrank', 'Zac'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Shadow Isles': {
+        champions: ['Thresh', 'Hecarim', 'Karthus', 'Kalista', 'Viego', 'Gwen', 'Maokai', 'Yorick', 'Elise'],
+        pointsByCount: { 2: 1.2, 3: 2.5, 4: 4, 5: 5 },
+      },
+      'Noxian Might': {
+        champions: ['Draven', 'Darius', 'Swain', 'Katarina', 'Sion', 'Talon', 'LeBlanc', 'Rell', 'Samira', 'Cassiopeia', 'Riven', 'Vladimir'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Shuriman Ascension': {
+        champions: ['Azir', 'Renekton', 'Nasus', 'Sivir', 'Taliyah', 'Akshan', 'Xerath', 'Rammus', 'Amumu', 'K’Sante', "K'Sante"],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Darkin Legacy': {
+        champions: ['Aatrox', 'Naafiri', 'Rhaast', 'Kayn', 'Varus'],
+        pointsByCount: { 2: 1.8, 3: 3.5, 4: 5 },
+      },
+      'Yordle Squad': {
+        champions: ['Gnar', 'Poppy', 'Tristana', 'Lulu', 'Kennen', 'Veigar', 'Heimerdinger', 'Rumble', 'Teemo', 'Corki'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
+      'Demacian Core': {
+        champions: ['Garen', 'Lux', 'Jarvan IV', 'Fiora', 'Vayne', 'Lucian', 'Sona', 'Galio', 'Poppy', 'Quinn', 'Kayle', 'Morgana', 'Shyvana', 'Sylas'],
+        pointsByCount: { 2: 1, 3: 2.2, 4: 3.5, 5: 4.5 },
+      },
     };
 
-    if (champions.includes('Xayah') && champions.includes('Rakan')) {
-      champBonus += 3;
-      activeSynergies.push('Lovers Duo (Xayah/Rakan)');
-    }
-
-    Object.entries(champGroups).forEach(([groupName, groupChamps]) => {
-      const matchCount = champions.filter(c => groupChamps.includes(c)).length;
+    Object.entries(loreGroups).forEach(([groupName, groupData]) => {
+      const matchCount = countMatches(groupData.champions);
       if (matchCount >= 2) {
-        let b = matchCount === 2 ? 1 : matchCount === 3 ? 2.5 : 4;
-        champBonus += b;
-        activeSynergies.push(`${groupName} (${matchCount})`);
+        const cappedCount = Math.min(matchCount, 5);
+        const points = groupData.pointsByCount[cappedCount] || groupData.pointsByCount[5] || 0;
+        addChampionSynergy(`${groupName} (${matchCount})`, points);
       }
     });
 
-    // Coach Synergies
+    const specialPairs: { name: string; champions: string[]; points: number }[] = [
+      { name: 'Lovers Duo (Xayah/Rakan)', champions: ['Xayah', 'Rakan'], points: 3 },
+      { name: 'Redeemed Hunters (Lucian/Senna)', champions: ['Lucian', 'Senna'], points: 2.5 },
+      { name: 'Wind Brothers (Yasuo/Yone)', champions: ['Yasuo', 'Yone'], points: 2.5 },
+      { name: 'Demacian Siblings (Garen/Lux)', champions: ['Garen', 'Lux'], points: 1.8 },
+      { name: 'Celestial Sisters (Kayle/Morgana)', champions: ['Kayle', 'Morgana'], points: 2.2 },
+      { name: 'Glorious Evolution (Viktor/Jayce)', champions: ['Viktor', 'Jayce'], points: 1.8 },
+      { name: 'Piltover Enforcers (Caitlyn/Vi)', champions: ['Caitlyn', 'Vi'], points: 2 },
+      { name: 'Darkin Blade Path (Aatrox/Varus)', champions: ['Aatrox', 'Varus'], points: 1.8 },
+      { name: 'Frozen Botlane (Ashe/Braum)', champions: ['Ashe', 'Braum'], points: 1.8 },
+    ];
+
+    specialPairs.forEach(pair => {
+      if (pair.champions.every(hasChampion)) {
+        addChampionSynergy(pair.name, pair.points);
+      }
+    });
+
+    const championTags: Record<string, string[]> = {
+      Aatrox: ['fighter', 'frontline', 'dive', 'ad', 'teamfight'],
+      Ahri: ['mage', 'pick', 'ap', 'mobile', 'early'],
+      Akali: ['assassin', 'dive', 'ap', 'mobile'],
+      Alistar: ['support', 'engage', 'frontline', 'cc', 'peel'],
+      Amumu: ['tank', 'engage', 'frontline', 'cc', 'wombo', 'ap'],
+      Anivia: ['mage', 'control', 'ap', 'scaling', 'waveclear'],
+      Aphelios: ['marksman', 'scaling', 'backline', 'ad', 'teamfight'],
+      Ashe: ['marksman', 'utility', 'cc', 'backline', 'ad', 'pick'],
+      Aurelion: ['mage', 'scaling', 'ap', 'teamfight'],
+      Azir: ['mage', 'scaling', 'ap', 'backline', 'wombo', 'control'],
+      Bard: ['support', 'utility', 'pick', 'roam', 'ap'],
+      Blitzcrank: ['support', 'pick', 'engage', 'cc'],
+      Braum: ['support', 'peel', 'frontline', 'cc', 'protect'],
+      Caitlyn: ['marksman', 'poke', 'siege', 'backline', 'ad', 'lane'],
+      Camille: ['fighter', 'dive', 'pick', 'ad', 'splitpush'],
+      Cassiopeia: ['mage', 'scaling', 'ap', 'backline', 'control'],
+      ChoGath: ['tank', 'frontline', 'cc', 'ap'],
+      "Cho'Gath": ['tank', 'frontline', 'cc', 'ap'],
+      Corki: ['marksman', 'poke', 'scaling', 'mixed', 'siege', 'backline'],
+      Darius: ['fighter', 'frontline', 'ad', 'skirmish'],
+      Draven: ['marksman', 'early', 'ad', 'backline', 'lane'],
+      Ekko: ['assassin', 'dive', 'ap', 'mobile', 'skirmish'],
+      Elise: ['mage', 'pick', 'dive', 'ap', 'early'],
+      Ezreal: ['marksman', 'poke', 'siege', 'backline', 'ad', 'mobile'],
+      Fiora: ['fighter', 'splitpush', 'ad', 'scaling'],
+      Galio: ['tank', 'engage', 'frontline', 'ap', 'cc', 'protect', 'wombo'],
+      Gnar: ['fighter', 'frontline', 'engage', 'cc', 'wombo', 'ad'],
+      Gragas: ['tank', 'engage', 'ap', 'cc', 'wombo', 'disengage'],
+      Graves: ['marksman', 'skirmish', 'ad', 'early'],
+      Gwen: ['fighter', 'dive', 'ap', 'scaling', 'teamfight'],
+      Hecarim: ['fighter', 'dive', 'engage', 'frontline', 'ad'],
+      Heimerdinger: ['mage', 'poke', 'siege', 'ap', 'control'],
+      Irelia: ['fighter', 'dive', 'ad', 'mobile', 'skirmish'],
+      Janna: ['support', 'peel', 'protect', 'disengage'],
+      Jarvan: ['tank', 'engage', 'frontline', 'cc', 'wombo', 'ad'],
+      'Jarvan IV': ['tank', 'engage', 'frontline', 'cc', 'wombo', 'ad'],
+      Jax: ['fighter', 'splitpush', 'ad', 'scaling'],
+      Jayce: ['fighter', 'poke', 'siege', 'ad', 'lane'],
+      Jhin: ['marksman', 'pick', 'backline', 'ad', 'utility'],
+      Jinx: ['marksman', 'scaling', 'backline', 'ad', 'teamfight'],
+      KaiSa: ['marksman', 'dive', 'scaling', 'mixed', 'backline'],
+      "Kai'Sa": ['marksman', 'dive', 'scaling', 'mixed', 'backline'],
+      Kalista: ['marksman', 'early', 'ad', 'engage', 'backline'],
+      Karma: ['support', 'poke', 'protect', 'utility', 'ap', 'siege'],
+      Karthus: ['mage', 'scaling', 'ap', 'teamfight'],
+      Kassadin: ['assassin', 'scaling', 'ap', 'mobile'],
+      Katarina: ['assassin', 'dive', 'ap', 'teamfight'],
+      Kayle: ['mage', 'scaling', 'protect', 'backline', 'ap'],
+      Kayn: ['fighter', 'dive', 'ad', 'mobile'],
+      Kennen: ['mage', 'engage', 'wombo', 'ap', 'teamfight'],
+      KhaZix: ['assassin', 'pick', 'ad', 'mobile'],
+      "Kha'Zix": ['assassin', 'pick', 'ad', 'mobile'],
+      Kindred: ['marksman', 'scaling', 'ad', 'protect', 'backline'],
+      KogMaw: ['marksman', 'scaling', 'backline', 'ad', 'protect'],
+      "Kog'Maw": ['marksman', 'scaling', 'backline', 'ad', 'protect'],
+      LeBlanc: ['assassin', 'pick', 'ap', 'mobile', 'early'],
+      LeeSin: ['fighter', 'engage', 'dive', 'ad', 'early', 'mobile'],
+      'Lee Sin': ['fighter', 'engage', 'dive', 'ad', 'early', 'mobile'],
+      Leona: ['support', 'engage', 'frontline', 'cc'],
+      Lissandra: ['mage', 'engage', 'cc', 'ap', 'wombo', 'control'],
+      Lucian: ['marksman', 'early', 'ad', 'backline', 'mobile'],
+      Lulu: ['support', 'peel', 'protect', 'utility', 'ap'],
+      Lux: ['mage', 'poke', 'pick', 'ap', 'siege'],
+      Malphite: ['tank', 'engage', 'frontline', 'cc', 'wombo', 'ap'],
+      Malzahar: ['mage', 'pick', 'control', 'ap', 'cc'],
+      Maokai: ['tank', 'engage', 'frontline', 'cc', 'control'],
+      MissFortune: ['marksman', 'teamfight', 'wombo', 'ad', 'backline'],
+      'Miss Fortune': ['marksman', 'teamfight', 'wombo', 'ad', 'backline'],
+      Morgana: ['mage', 'pick', 'protect', 'ap', 'cc'],
+      Nami: ['support', 'peel', 'protect', 'engage', 'utility'],
+      Nasus: ['fighter', 'scaling', 'frontline', 'splitpush', 'ad'],
+      Nautilus: ['support', 'engage', 'frontline', 'cc', 'pick'],
+      Nidalee: ['mage', 'poke', 'ap', 'early', 'mobile'],
+      Olaf: ['fighter', 'dive', 'frontline', 'ad', 'early'],
+      Orianna: ['mage', 'control', 'wombo', 'ap', 'teamfight', 'backline'],
+      Ornn: ['tank', 'engage', 'frontline', 'cc', 'scaling'],
+      Pantheon: ['fighter', 'dive', 'early', 'ad', 'pick'],
+      Poppy: ['tank', 'frontline', 'peel', 'cc', 'disengage'],
+      Pyke: ['support', 'pick', 'roam', 'ad', 'early'],
+      Qiyana: ['assassin', 'dive', 'ad', 'wombo', 'mobile'],
+      Rakan: ['support', 'engage', 'cc', 'wombo', 'protect'],
+      Rell: ['support', 'engage', 'frontline', 'cc', 'wombo'],
+      RekSai: ['fighter', 'dive', 'early', 'ad'],
+      "Rek'Sai": ['fighter', 'dive', 'early', 'ad'],
+      Renata: ['support', 'peel', 'protect', 'utility', 'teamfight'],
+      'Renata Glasc': ['support', 'peel', 'protect', 'utility', 'teamfight'],
+      Renekton: ['fighter', 'frontline', 'early', 'ad', 'lane'],
+      Riven: ['fighter', 'dive', 'ad', 'mobile'],
+      Rumble: ['mage', 'wombo', 'ap', 'teamfight', 'lane'],
+      Ryze: ['mage', 'scaling', 'ap', 'control', 'roam'],
+      Samira: ['marksman', 'dive', 'ad', 'teamfight'],
+      Sejuani: ['tank', 'engage', 'frontline', 'cc'],
+      Senna: ['marksman', 'support', 'scaling', 'utility', 'ad', 'backline'],
+      Seraphine: ['mage', 'support', 'wombo', 'protect', 'ap', 'teamfight'],
+      Sett: ['fighter', 'frontline', 'engage', 'ad'],
+      Shen: ['tank', 'protect', 'frontline', 'cc'],
+      Singed: ['tank', 'frontline', 'ap', 'disrupt'],
+      Sion: ['tank', 'engage', 'frontline', 'cc'],
+      Sivir: ['marksman', 'scaling', 'teamfight', 'backline', 'ad'],
+      Swain: ['mage', 'frontline', 'ap', 'teamfight'],
+      Sylas: ['mage', 'dive', 'ap', 'skirmish'],
+      Syndra: ['mage', 'pick', 'ap', 'control', 'backline'],
+      TahmKench: ['support', 'peel', 'protect', 'frontline'],
+      'Tahm Kench': ['support', 'peel', 'protect', 'frontline'],
+      Taliyah: ['mage', 'pick', 'roam', 'ap', 'control'],
+      Talon: ['assassin', 'pick', 'ad', 'roam', 'early'],
+      Thresh: ['support', 'pick', 'peel', 'cc', 'utility'],
+      Tristana: ['marksman', 'scaling', 'backline', 'ad', 'dive'],
+      Trundle: ['fighter', 'frontline', 'ad', 'skirmish'],
+      TwistedFate: ['mage', 'pick', 'roam', 'ap', 'utility'],
+      'Twisted Fate': ['mage', 'pick', 'roam', 'ap', 'utility'],
+      Varus: ['marksman', 'poke', 'pick', 'backline', 'ad', 'siege'],
+      Vayne: ['marksman', 'scaling', 'backline', 'ad'],
+      Veigar: ['mage', 'scaling', 'ap', 'pick', 'control'],
+      VelKoz: ['mage', 'poke', 'siege', 'ap'],
+      "Vel'Koz": ['mage', 'poke', 'siege', 'ap'],
+      Vi: ['fighter', 'dive', 'engage', 'ad', 'pick'],
+      Viego: ['fighter', 'dive', 'ad', 'teamfight'],
+      Viktor: ['mage', 'scaling', 'ap', 'control', 'backline', 'teamfight'],
+      Vladimir: ['mage', 'scaling', 'ap', 'teamfight', 'dive'],
+      Volibear: ['tank', 'dive', 'frontline', 'early'],
+      Wukong: ['fighter', 'engage', 'wombo', 'ad', 'teamfight'],
+      Xayah: ['marksman', 'scaling', 'backline', 'ad', 'selfpeel'],
+      Xerath: ['mage', 'poke', 'siege', 'ap', 'backline'],
+      XinZhao: ['fighter', 'dive', 'early', 'ad', 'frontline'],
+      'Xin Zhao': ['fighter', 'dive', 'early', 'ad', 'frontline'],
+      Yasuo: ['fighter', 'dive', 'ad', 'wombo', 'mobile'],
+      Yone: ['fighter', 'dive', 'ad', 'wombo', 'mobile'],
+      Yuumi: ['support', 'protect', 'peel', 'scaling'],
+      Zac: ['tank', 'engage', 'frontline', 'cc', 'wombo'],
+      Zed: ['assassin', 'pick', 'ad', 'mobile'],
+      Zeri: ['marksman', 'scaling', 'backline', 'ad', 'mobile'],
+      Ziggs: ['mage', 'poke', 'siege', 'ap', 'waveclear'],
+      Zoe: ['mage', 'poke', 'pick', 'ap'],
+      Zyra: ['mage', 'support', 'poke', 'ap', 'control'],
+    };
+
+    const getTagsForChampion = (champion: string) => {
+      const normalized = normalizeChampionName(champion);
+      return championTags[normalized] || championTags[normalized.replace(/[\s']/g, '')] || [];
+    };
+
+    const tagCounts: Record<string, number> = {};
+    uniqueChampions.forEach(champion => {
+      getTagsForChampion(champion).forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+
+    const addCompositionSynergy = (condition: boolean, name: string, points: number) => {
+      if (condition) addChampionSynergy(name, points);
+    };
+
+    addCompositionSynergy((tagCounts.engage || 0) >= 3, `Full Engage (${tagCounts.engage || 0})`, 2.8);
+    addCompositionSynergy((tagCounts.dive || 0) >= 3, `Dive Comp (${tagCounts.dive || 0})`, 2.5);
+    addCompositionSynergy((tagCounts.poke || 0) >= 2 && (tagCounts.siege || 0) >= 2, `Poke Siege (${tagCounts.poke || 0})`, 2.2);
+    addCompositionSynergy((tagCounts.pick || 0) >= 3, `Pick & Catch (${tagCounts.pick || 0})`, 2.4);
+    addCompositionSynergy((tagCounts.wombo || 0) >= 2, `Wombo Combo (${tagCounts.wombo || 0})`, 2.6);
+    addCompositionSynergy((tagCounts.cc || 0) >= 3, `CC Chain (${tagCounts.cc || 0})`, 2.4);
+    addCompositionSynergy((tagCounts.protect || 0) >= 2 && (tagCounts.marksman || 0) >= 1, 'Protect the Carry', 2.2);
+    addCompositionSynergy((tagCounts.frontline || 0) >= 2 && (tagCounts.backline || 0) >= 2, 'Frontline + Backline', 2.2);
+    addCompositionSynergy((tagCounts.scaling || 0) >= 3, `Scaling Teamfight (${tagCounts.scaling || 0})`, 2.2);
+    addCompositionSynergy((tagCounts.early || 0) >= 3, `Early Game Tempo (${tagCounts.early || 0})`, 1.8);
+    addCompositionSynergy((tagCounts.splitpush || 0) >= 2, `Side Lane Pressure (${tagCounts.splitpush || 0})`, 1.6);
+    addCompositionSynergy((tagCounts.ad || 0) >= 2 && (tagCounts.ap || 0) >= 2, 'Balanced Damage', 2);
+    addCompositionSynergy((tagCounts.ad || 0) >= 4, `AD Heavy (${tagCounts.ad || 0})`, 1.3);
+    addCompositionSynergy((tagCounts.ap || 0) >= 4, `AP Heavy (${tagCounts.ap || 0})`, 1.3);
+
+    // Coach synergies
     if (coachOnly && coachOnly.signatureChampion) {
       const style = coachOnly.signatureChampion.toLowerCase();
+
       if (style.match(/draft|pizarra|brain|notebook|tactic|strateg|flex|style/)) {
-         coachBonus += 2.5; 
-         if (playersOnly.length >= 5) coachBonus += 1.5;
-         activeSynergies.push('Tactical Draft (Coach)');
+        coachBonus += 2.5;
+        if (playersOnly.length >= 5) coachBonus += 1.5;
+        activeSynergies.push('Tactical Draft (Coach)');
       } else if (style.match(/agresi|aggress|creat/)) {
-         const agressiveChamps = ['Lee Sin', 'Elise', 'LeBlanc', 'Zed', 'Renekton', 'Draven', 'Lucian', 'Kha\'Zix', 'Nidalee', 'Pantheon', 'Jayce', 'Qiyana', 'Talon', 'Xin Zhao'];
-         const aggroCount = champions.filter(c => agressiveChamps.includes(c)).length;
-         if (aggroCount >= 1) {
-            coachBonus += 1 + (aggroCount * 1.5);
-            activeSynergies.push(`Aggressive Pacing (${aggroCount})`);
-         } else {
-            coachBonus += 0.5;
-            activeSynergies.push('Aggressive Pacing (Coach)');
-         }
+        const aggressiveChamps = ['Lee Sin', 'Elise', 'LeBlanc', 'Zed', 'Renekton', 'Draven', 'Lucian', "Kha'Zix", 'Nidalee', 'Pantheon', 'Jayce', 'Qiyana', 'Talon', 'Xin Zhao', 'Kalista', 'Pyke', 'Vi'];
+        const aggroCount = uniqueChampions.filter(c => aggressiveChamps.includes(c)).length;
+
+        if (aggroCount >= 1) {
+          coachBonus += 1 + (aggroCount * 1.5);
+          activeSynergies.push(`Aggressive Pacing (${aggroCount})`);
+        } else {
+          coachBonus += 0.5;
+          activeSynergies.push('Aggressive Pacing (Coach)');
+        }
       } else {
-         let macroBonus = Math.min(3, (regionBonus + teamBonus) * 0.4);
-         coachBonus += macroBonus > 0 ? macroBonus : 1;
-         activeSynergies.push('Macro Discipline (Coach)');
+        const macroBonus = Math.min(3, (regionBonus + teamBonus) * 0.4);
+        coachBonus += macroBonus > 0 ? macroBonus : 1;
+        activeSynergies.push('Macro Discipline (Coach)');
       }
     }
 
-    // Keep numbers clean
+    // Keep champion chemistry valuable, but not strong enough to replace roster/region/year decisions.
+    champBonus = Math.min(12, Math.round(champBonus * 10) / 10);
     coachBonus = Math.round(coachBonus * 10) / 10;
-    champBonus = Math.floor(champBonus * 10) / 10;
 
     const totalSynergy = regionBonus + teamBonus + yearBonus + champBonus + coachBonus;
-    
-    // We base the score on the real average rating of all filled slots (out of 6 max: 5 roles + coach)
+
     const filledSlots = slots.filter(s => s.player !== null);
     const sumRatings = filledSlots.reduce((sum, s) => sum + (s.player?.rating || 0), 0);
     const baseAvgSix = filledSlots.length > 0 ? (sumRatings / filledSlots.length) : 70;
 
-    // Synergy contribution: total synergy points are multiplied by 0.45 to yield a balanced OVR boost
     const synergyBoost = totalSynergy * 0.45;
     const finalScore = Math.round(baseAvgSix + synergyBoost);
 
@@ -222,6 +440,18 @@ export default function App() {
   };
 
   const synergyDetails = getSynergiesAndScore();
+
+  const championSynergyLabels = (synergyDetails.activeSynergies || []).filter(s =>
+    !s.includes(' Region') &&
+    !s.includes(' Franchise') &&
+    !s.includes('Perfect Chemistry') &&
+    !s.includes('Coach')
+  );
+
+  const coachSynergyLabels = (synergyDetails.activeSynergies || []).filter(s =>
+    s.includes('Coach') || s.includes('Pacing')
+  );
+
   const currentTeamScore = synergyDetails.score;
 
   // Get count of drafted slots
@@ -402,7 +632,7 @@ export default function App() {
       <header className="sticky top-0 bg-[#010a13]/85 backdrop-blur-md border-b border-[#c8aa6e]/20 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#c8aa6e] _to-[#785a28] bg-yellow-500 rounded-xl flex items-center justify-center font-black text-[#010a13] text-sm tracking-tighter shadow-[0_0_12px_rgba(200,170,110,0.25)] font-display">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#c8aa6e] to-[#785a28] bg-yellow-500 rounded-xl flex items-center justify-center font-black text-[#010a13] text-sm tracking-tighter shadow-[0_0_12px_rgba(200,170,110,0.25)] font-display">
               🏆
             </div>
             <div>
@@ -576,7 +806,7 @@ export default function App() {
               <button
                 id="btn-start-game"
                 onClick={() => setPhase('draft')}
-                className="inline-flex items-center gap-2 px-10 py-5 bg-[#c8aa6e] hover:brightness-115 text-[#010a13] font-black text-xs tracking-widest uppercase rounded-xl transition-all duration-300 hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 cursor-pointer font-display"
+                className="inline-flex items-center gap-2 px-10 py-5 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] font-black text-xs tracking-widest uppercase rounded-xl transition-all duration-300 hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 cursor-pointer font-display"
               >
                 {activeTrans.ctaStart}
               </button>
@@ -596,7 +826,7 @@ export default function App() {
                 <div className="space-y-1">
                   <span className="text-[9px] text-[#a09b8c] font-black uppercase tracking-widest block">{activeTrans.averageRating}</span>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-display font-black text-5.55 text-[#c8aa6e] tracking-tight leading-none">
+                    <span className="font-display font-black text-5xl text-[#c8aa6e] tracking-tight leading-none">
                       {currentTeamScore}
                     </span>
                     <span className="text-xs font-bold text-[#a09b8c] uppercase tracking-tighter">/ 99 OVR</span>
@@ -629,33 +859,33 @@ export default function App() {
                   </button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  <div className={`p-2.5 rounded-xl border ${synergyDetails.regionBonus > 0 ? 'bg-sky-950/25 border-sky-850/60 text-sky-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
+                  <div className={`p-2.5 rounded-xl border ${synergyDetails.regionBonus > 0 ? 'bg-sky-950/25 border-sky-800/60 text-sky-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
                     <div className="text-[9px] font-bold tracking-wider font-mono uppercase">{activeTrans.regionBonus}</div>
                     <div className="text-lg font-black mt-0.5">+{synergyDetails.regionBonus}</div>
                     <p className="text-[8px] text-[#a09b8c]/65">3+ / 5+</p>
                   </div>
-                  <div className={`p-2.5 rounded-xl border ${synergyDetails.teamBonus > 0 ? 'bg-emerald-950/25 border-emerald-850/60 text-emerald-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
+                  <div className={`p-2.5 rounded-xl border ${synergyDetails.teamBonus > 0 ? 'bg-emerald-950/25 border-emerald-800/60 text-emerald-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
                     <div className="text-[9px] font-bold tracking-wider font-mono uppercase">{activeTrans.teamBonus}</div>
                     <div className="text-lg font-black mt-0.5">+{synergyDetails.teamBonus}</div>
                     <p className="text-[8px] text-[#a09b8c]/65">2+ / 3+ / 4+</p>
                   </div>
-                  <div className={`p-2.5 rounded-xl border ${synergyDetails.yearBonus > 0 ? 'bg-purple-950/25 border-purple-850/60 text-purple-400 font-semibold' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
+                  <div className={`p-2.5 rounded-xl border ${synergyDetails.yearBonus > 0 ? 'bg-purple-950/25 border-purple-800/60 text-purple-400 font-semibold' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
                     <div className="text-[9px] font-bold tracking-wider font-mono uppercase">{activeTrans.yearBonus}</div>
                     <div className="text-lg font-black mt-0.5">+{synergyDetails.yearBonus}</div>
                     <p className="text-[8px] text-[#a09b8c]/65">{activeTrans.perfectChemistry}</p>
                   </div>
-                  <div className={`p-2.5 rounded-xl border ${(synergyDetails.champBonus ?? 0) > 0 ? 'bg-amber-950/25 border-amber-850/60 text-amber-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
+                  <div className={`p-2.5 rounded-xl border ${(synergyDetails.champBonus ?? 0) > 0 ? 'bg-amber-950/25 border-amber-800/60 text-amber-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
                     <div className="text-[9px] font-bold tracking-wider font-mono uppercase truncate">CHAMPIONS</div>
                     <div className="text-lg font-black mt-0.5">+{synergyDetails.champBonus}</div>
-                    <p className="text-[7px] text-[#a09b8c]/65 truncate" title={synergyDetails.activeSynergies?.join(', ')}>
-                      {synergyDetails.activeSynergies?.filter(s => !s.includes('Coach'))[0] || 'Groups / Lore'}
+                    <p className="text-[7px] text-[#a09b8c]/65 truncate" title={championSynergyLabels.join(', ')}>
+                      {championSynergyLabels[0] || 'Lore / Combat Style'}
                     </p>
                   </div>
-                  <div className={`p-2.5 rounded-xl border ${(synergyDetails.coachBonus ?? 0) > 0 ? 'bg-rose-950/25 border-rose-850/60 text-rose-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
+                  <div className={`p-2.5 rounded-xl border ${(synergyDetails.coachBonus ?? 0) > 0 ? 'bg-rose-950/25 border-rose-800/60 text-rose-400 font-medium' : 'bg-[#010a13]/40 border-[#c8aa6e]/10 text-[#a09b8c]/40'}`}>
                     <div className="text-[9px] font-bold tracking-wider font-mono uppercase truncate">COACH STYLE</div>
                     <div className="text-lg font-black mt-0.5">+{synergyDetails.coachBonus}</div>
-                    <p className="text-[7px] text-[#a09b8c]/65 truncate" title={synergyDetails.activeSynergies?.join(', ')}>
-                      {synergyDetails.activeSynergies?.filter(s => s.includes('Coach'))[0] || 'Draft matching'}
+                    <p className="text-[7px] text-[#a09b8c]/65 truncate" title={coachSynergyLabels.join(', ')}>
+                      {coachSynergyLabels[0] || 'Draft matching'}
                     </p>
                   </div>
                 </div>
@@ -683,7 +913,7 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Column 1 */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-1.5 font-bold text-sky-450">
+                    <div className="flex items-center gap-1.5 font-bold text-sky-400">
                       <span>🌍</span>
                       <h6 className="uppercase tracking-wider font-display font-black text-[10px]">{language === 'es' ? 'Sinergia de Región' : 'Region Synergy'}</h6>
                     </div>
@@ -699,8 +929,8 @@ export default function App() {
                     </div>
                     <p className="text-[#a09b8c] leading-relaxed text-[11px] whitespace-pre-line">
                       {language === 'es'
-                        ? 'Premia la afinidad por haber defendido el mismo escudo en una etapa de su carrera.\n• 2 jugadores: +2.0 puntos OVR.\n• 3 jugadores: +3.5 puntos OVR.\n• 4+ jugadores: +5.0 puntos OVR.'
-                        : 'Affinities for having played under the same organization shield.\n• 2 players: +2.0 OVR\n• 3 players: +3.5 OVR\n• 4+ players: +5.0 OVR.'}
+                        ? 'Premia la afinidad por haber defendido el mismo escudo en una etapa de su carrera.\n• 2 jugadores: +2.5 puntos OVR.\n• 3 jugadores: +5.0 puntos OVR.\n• 4+ jugadores: +8.0 puntos OVR.'
+                        : 'Affinities for having played under the same organization shield.\n• 2 players: +2.5 OVR\n• 3 players: +5.0 OVR\n• 4+ players: +8.0 OVR.'}
                     </p>
                   </div>
 
@@ -712,8 +942,8 @@ export default function App() {
                     </div>
                     <p className="text-[#a09b8c] leading-relaxed text-[11px] whitespace-pre-line">
                       {language === 'es'
-                        ? 'Se activa si tienes jugadores que compartieron exactamente el mismo año y equipo de competición histórica (e.g. Fnatic 2018).\n• Coincidencia del año exacto: +2.5 puntos OVR.'
-                        : 'Triggers if you draft players who competed together in the exact same year and team roster (e.g. Fnatic 2018).\n• Exact year matching: +2.5 OVR.'}
+                        ? 'Se activa si tienes jugadores que compartieron exactamente el mismo año y equipo de competición histórica (e.g. Fnatic 2018).\n• 2 jugadores: +2.5 puntos OVR.\n• 3 jugadores: +5.0 puntos OVR.\n• 4 jugadores: +8.0 puntos OVR.\n• 5 jugadores: +10.0 puntos OVR.'
+                        : 'Triggers if you draft players who competed together in the exact same year and team roster (e.g. Fnatic 2018).\n• 2 players: +2.5 OVR\n• 3 players: +5.0 OVR\n• 4 players: +8.0 OVR\n• 5 players: +10.0 OVR.'}
                     </p>
 
                     <div className="flex items-center gap-1.5 font-bold text-amber-400 pt-1">
@@ -722,8 +952,8 @@ export default function App() {
                     </div>
                     <p className="text-[#a09b8c] leading-relaxed text-[11px] whitespace-pre-line">
                       {language === 'es'
-                        ? 'Bono especial si tus jugadores tienen campeones insignia que comparten lore en League of Legends:\n• Lovers Duo: Xayah y Rakan en el Roster (+3 puntos).\n• Grupos temáticos (Freljord Forces, Noxian Might, Ionia Strike, Void Terror, Hijos del Knockup, Tech & Chem) con 2 o más integrantes: obtienen de +1.0 a +4.0 puntos extras.'
-                        : 'Special bonuses based on your drafted player signature champions and their LoL lore relationships:\n• Lovers Duo: Xayah and Rakan selected together (+3 OVR).\n• Theme factions (Freljord, Noxus, Ionia, Void, Knockup, Tech) with 2+ picks: +1.0 to +4.0 OVR.'}
+                        ? 'Bono especial por campeones insignia, sin contar equipo real, región competitiva ni año.\n• Parejas de lore: Xayah/Rakan, Lucian/Senna, Yasuo/Yone, Garen/Lux, Kayle/Morgana.\n• Facciones de lore: Ionia, Freljord, Vacío, Piltover/Zaun, Noxus, Shurima, Darkin, Yordles y Shadow Isles.\n• Estilo de combate: Engage, Dive, Poke, Pick, Wombo Combo, CC Chain, Protect the Carry, Scaling, Frontline + Backline y daño equilibrado.\n• El bonus de campeones tiene límite para no sustituir la química de roster.'
+                        : 'Special bonus from signature champions only, without counting real esports team, competitive region or year.\n• Lore pairs: Xayah/Rakan, Lucian/Senna, Yasuo/Yone, Garen/Lux, Kayle/Morgana.\n• Lore factions: Ionia, Freljord, Void, Piltover/Zaun, Noxus, Shurima, Darkin, Yordles and Shadow Isles.\n• Combat style: Engage, Dive, Poke, Pick, Wombo Combo, CC Chain, Protect the Carry, Scaling, Frontline + Backline and balanced damage.\n• Champion bonus is capped so it does not replace roster chemistry.'}
                     </p>
                   </div>
 
@@ -808,10 +1038,11 @@ export default function App() {
                            <span className="text-xs bg-[#c8aa6e]/10 text-[#c8aa6e] font-bold border border-[#c8aa6e]/20 px-2.5 py-0.5 rounded">
                              {currentActiveTeam.region}
                            </span>
-                           <span className="text-xs text-[#a09b8c] font-mono font-bold">{activeTrans.luckyTeam} {currentActiveTeam.year}</span>
+                           <span className="text-xs text-[#a09b8c] font-mono font-bold">{activeTrans.luckyTeam}</span>
                         </div>
-                        <h3 className="text-lg font-black text-[#f0e6d2] mt-1.5 uppercase font-display">
-                          {currentActiveTeam.name}
+                        <h3 className="text-lg font-black text-[#f0e6d2] mt-1.5 uppercase font-display flex items-baseline gap-2 flex-wrap">
+                          <span>{currentActiveTeam.name}</span>
+                          <span>{currentActiveTeam.year}</span>
                         </h3>
                       </div>
 
@@ -927,7 +1158,7 @@ export default function App() {
                     <button
                       id="draft-complete-worlds-trigger"
                       onClick={handleStartTournament}
-                      className="w-full justify-center flex items-center gap-2 px-8 py-4 bg-[#c8aa6e] hover:brightness-115 text-[#010a13] font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-300 shadow-xl shadow-[#091428]/40 hover:-translate-y-0.5 cursor-pointer font-display"
+                      className="w-full justify-center flex items-center gap-2 px-8 py-4 bg-[#c8aa6e] hover:brightness-110 text-[#010a13] font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-300 shadow-xl shadow-[#091428]/40 hover:-translate-y-0.5 cursor-pointer font-display"
                     >
                       <Swords className="w-4 h-4" />
                       {activeTrans['startTour Cta']}
@@ -968,7 +1199,7 @@ export default function App() {
                     <span className={isActive ? 'text-[#f0e6d2] font-semibold text-xs' : isPassed ? 'text-[#a09b8c] text-[11px]' : 'text-[#a09b8c]/40 text-[11px]'}>
                       {getLocalizedShortRoundName(idx, gameMode, language)}
                     </span>
-                    {idx < 5 && <ChevronRight className="hidden md:block w-4 h-4 text-slate-750" />}
+                    {idx < 5 && <ChevronRight className="hidden md:block w-4 h-4 text-slate-700" />}
                   </div>
                 );
               })}
@@ -1001,7 +1232,7 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <div className="absolute -inset-2 rounded-full bg-red-650/30 opacity-40 blur-2xl animate-pulse" />
+                  <div className="absolute -inset-2 rounded-full bg-red-600/30 opacity-40 blur-2xl animate-pulse" />
                   <div className="p-8 relative bg-[#010a13] border-2 border-red-500/80 rounded-full inline-flex text-red-400">
                     <Swords className="w-16 h-16" />
                   </div>
@@ -1015,7 +1246,7 @@ export default function App() {
                   {language === 'es' ? 'CAMPEÓN INVICTO 6-0' : 'UNDEFEATED CHAMPION 6-0'}
                 </span>
               ) : (
-                <span className="text-[10px] bg-red-650 text-white font-black px-3.5 py-1.5 rounded-full uppercase tracking-widest font-display inline-block">
+                <span className="text-[10px] bg-red-600 text-white font-black px-3.5 py-1.5 rounded-full uppercase tracking-widest font-display inline-block">
                   {language === 'es' ? 'DESAFÍO COMPLETADO' : 'RUN COMPLETED'}
                 </span>
               )}
@@ -1113,7 +1344,7 @@ export default function App() {
               <button
                 id="reset-entire-draft-after-loss-btn-unified"
                 onClick={() => handleResetTournament(true)}
-                className="w-full py-4.5 bg-[#c8aa6e] hover:bg-[#b09358] text-[#010a13] hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-155 cursor-pointer flex items-center justify-center gap-2 font-display active:translate-y-0"
+                className="w-full py-4.5 bg-[#c8aa6e] hover:bg-[#b09358] text-[#010a13] hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 font-display active:translate-y-0"
               >
                 <span>🔄</span>
                 <span>{language === 'es' ? 'VOLVER A JUGAR (NUEVO DRAFT)' : 'PLAY AGAIN (NEW DRAFT)'}</span>
