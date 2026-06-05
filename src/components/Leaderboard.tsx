@@ -27,24 +27,58 @@ interface LeaderboardProps {
 const API_URL = 'https://api.5vs5.pro/api/leaderboard';
 
 const COUNTRIES = [
-  { code: 'ES', nameEs: 'España', nameEn: 'Spain', flag: '🇪🇸' },
-  { code: 'KR', nameEs: 'Corea del Sur', nameEn: 'South Korea', flag: '🇰🇷' },
+  { code: 'AR', nameEs: 'Argentina', nameEn: 'Argentina', flag: '🇦🇷' },
+  { code: 'AU', nameEs: 'Australia', nameEn: 'Australia', flag: '🇦🇺' },
+  { code: 'AT', nameEs: 'Austria', nameEn: 'Austria', flag: '🇦🇹' },
+  { code: 'BE', nameEs: 'Bélgica', nameEn: 'Belgium', flag: '🇧🇪' },
+  { code: 'BR', nameEs: 'Brasil', nameEn: 'Brazil', flag: '🇧🇷' },
+  { code: 'BG', nameEs: 'Bulgaria', nameEn: 'Bulgaria', flag: '🇧🇬' },
+  { code: 'CA', nameEs: 'Canadá', nameEn: 'Canada', flag: '🇨🇦' },
+  { code: 'CL', nameEs: 'Chile', nameEn: 'Chile', flag: '🇨🇱' },
   { code: 'CN', nameEs: 'China', nameEn: 'China', flag: '🇨🇳' },
-  { code: 'US', nameEs: 'Estados Unidos', nameEn: 'United States', flag: '🇺🇸' },
+  { code: 'CO', nameEs: 'Colombia', nameEn: 'Colombia', flag: '🇨🇴' },
+  { code: 'HR', nameEs: 'Croacia', nameEn: 'Croatia', flag: '🇭🇷' },
+  { code: 'CZ', nameEs: 'Chequia', nameEn: 'Czechia', flag: '🇨🇿' },
+  { code: 'DK', nameEs: 'Dinamarca', nameEn: 'Denmark', flag: '🇩🇰' },
+  { code: 'EC', nameEs: 'Ecuador', nameEn: 'Ecuador', flag: '🇪🇨' },
+  { code: 'EG', nameEs: 'Egipto', nameEn: 'Egypt', flag: '🇪🇬' },
+  { code: 'ES', nameEs: 'España', nameEn: 'Spain', flag: '🇪🇸' },
+  { code: 'FI', nameEs: 'Finlandia', nameEn: 'Finland', flag: '🇫🇮' },
   { code: 'FR', nameEs: 'Francia', nameEn: 'France', flag: '🇫🇷' },
   { code: 'DE', nameEs: 'Alemania', nameEn: 'Germany', flag: '🇩🇪' },
-  { code: 'IT', nameEs: 'Italia', nameEn: 'Italy', flag: '🇮🇹' },
+  { code: 'GR', nameEs: 'Grecia', nameEn: 'Greece', flag: '🇬🇷' },
   { code: 'GB', nameEs: 'Reino Unido', nameEn: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'SE', nameEs: 'Suecia', nameEn: 'Sweden', flag: '🇸🇪' },
-  { code: 'PT', nameEs: 'Portugal', nameEn: 'Portugal', flag: '🇵🇹' },
-  { code: 'CA', nameEs: 'Canadá', nameEn: 'Canada', flag: '🇨🇦' },
-  { code: 'BR', nameEs: 'Brasil', nameEn: 'Brazil', flag: '🇧🇷' },
-  { code: 'VN', nameEs: 'Vietnam', nameEn: 'Vietnam', flag: '🇻🇳' },
+  { code: 'HU', nameEs: 'Hungría', nameEn: 'Hungary', flag: '🇭🇺' },
+  { code: 'IN', nameEs: 'India', nameEn: 'India', flag: '🇮🇳' },
+  { code: 'ID', nameEs: 'Indonesia', nameEn: 'Indonesia', flag: '🇮🇩' },
+  { code: 'IE', nameEs: 'Irlanda', nameEn: 'Ireland', flag: '🇮🇪' },
+  { code: 'IT', nameEs: 'Italia', nameEn: 'Italy', flag: '🇮🇹' },
   { code: 'JP', nameEs: 'Japón', nameEn: 'Japan', flag: '🇯🇵' },
+  { code: 'KR', nameEs: 'Corea del Sur', nameEn: 'South Korea', flag: '🇰🇷' },
   { code: 'MX', nameEs: 'México', nameEn: 'Mexico', flag: '🇲🇽' },
-  { code: 'AR', nameEs: 'Argentina', nameEn: 'Argentina', flag: '🇦🇷' },
-  { code: 'CL', nameEs: 'Chile', nameEn: 'Chile', flag: '🇨🇱' }
+  { code: 'MA', nameEs: 'Marruecos', nameEn: 'Morocco', flag: '🇲🇦' },
+  { code: 'NL', nameEs: 'Países Bajos', nameEn: 'Netherlands', flag: '🇳🇱' },
+  { code: 'NO', nameEs: 'Noruega', nameEn: 'Norway', flag: '🇳🇴' },
+  { code: 'PE', nameEs: 'Perú', nameEn: 'Peru', flag: '🇵🇪' },
+  { code: 'PH', nameEs: 'Filipinas', nameEn: 'Philippines', flag: '🇵🇭' },
+  { code: 'PL', nameEs: 'Polonia', nameEn: 'Poland', flag: '🇵🇱' },
+  { code: 'PT', nameEs: 'Portugal', nameEn: 'Portugal', flag: '🇵🇹' },
+  { code: 'RO', nameEs: 'Rumanía', nameEn: 'Romania', flag: '🇷🇴' },
+  { code: 'SA', nameEs: 'Arabia Saudí', nameEn: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: 'RS', nameEs: 'Serbia', nameEn: 'Serbia', flag: '🇷🇸' },
+  { code: 'SE', nameEs: 'Suecia', nameEn: 'Sweden', flag: '🇸🇪' },
+  { code: 'CH', nameEs: 'Suiza', nameEn: 'Switzerland', flag: '🇨🇭' },
+  { code: 'TR', nameEs: 'Turquía', nameEn: 'Turkey', flag: '🇹🇷' },
+  { code: 'UA', nameEs: 'Ucrania', nameEn: 'Ukraine', flag: '🇺🇦' },
+  { code: 'US', nameEs: 'Estados Unidos', nameEn: 'United States', flag: '🇺🇸' },
+  { code: 'UY', nameEs: 'Uruguay', nameEn: 'Uruguay', flag: '🇺🇾' },
+  { code: 'VE', nameEs: 'Venezuela', nameEn: 'Venezuela', flag: '🇻🇪' },
+  { code: 'VN', nameEs: 'Vietnam', nameEn: 'Vietnam', flag: '🇻🇳' }
 ].sort((a, b) => a.nameEs.localeCompare(b.nameEs));
+
+const getFlagByCountryCode = (countryCode: string) => {
+  return COUNTRIES.find(country => country.code === countryCode)?.flag || '🏳️';
+};
 
 export default function Leaderboard({
   winsCount,
@@ -111,9 +145,7 @@ export default function Leaderboard({
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry),
       });
 
@@ -145,7 +177,7 @@ export default function Leaderboard({
             <span>{isEs ? 'RANKING MUNDIAL' : 'GLOBAL COACH LEADERBOARD'}</span>
           </h3>
           <p className="text-xs text-[#a09b8c] font-mono mt-1">
-            {isEs ? 'COMPITE CON LOS ENTRENADORES MÁS ICONICOS DEL MUNDO' : 'COMPETE AGAINST THE MOST ICONIC COACHES'}
+            {isEs ? 'COMPITE CON LOS ENTRENADORES MÁS ICÓNICOS DEL MUNDO' : 'COMPETE AGAINST THE MOST ICONIC COACHES'}
           </p>
         </div>
 
@@ -288,7 +320,9 @@ export default function Leaderboard({
                         </td>
 
                         <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[150px] truncate">
-                          <span className="mr-2" title={entry.countryCode}>{entry.flag}</span>
+                          <span className="mr-2" title={entry.countryCode}>
+                            {getFlagByCountryCode(entry.countryCode)}
+                          </span>
                           <span>{entry.name}</span>
                         </td>
 
