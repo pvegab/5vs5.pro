@@ -7,6 +7,7 @@ import RouletteWheel from './components/RouletteWheel';
 import MatchSimulatorView from './components/MatchSimulatorView';
 import ShareWidget from './components/ShareWidget';
 import Leaderboard from './components/Leaderboard';
+import { ExoFullpageReplayTags, ExoResponsiveBanner, ExoVideoSliderOnce } from './components/ExoClickAd';
 import { Language, LANGUAGES, TRANSLATIONS, getLocalizedRoundName, getLocalizedShortRoundName } from './locales';
 import { Trophy, RefreshCw, Star, Swords, Zap, Flame, Sparkles, ChevronRight, Check, Info } from 'lucide-react';
 import { playDraftLock } from './utils/audio';
@@ -627,6 +628,10 @@ export default function App() {
 
   return (
     <div id="main-viewport" className="min-h-screen bg-[#010a13] font-sans selection:bg-[#c8aa6e] selection:text-[#010a13] text-[#f0e6d2] pb-16">
+      <ExoFullpageReplayTags />
+
+      <ExoVideoSliderOnce enabled={phase === 'tournament' && matchHistory.length >= 2} />
+
       
       {/* Dynamic Background Grid Mesh */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#c8aa6e_1px,transparent_1px),linear-gradient(to_bottom,#c8aa6e_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -828,6 +833,8 @@ export default function App() {
                 </li>
               </ul>
             </div>
+
+            <ExoResponsiveBanner subId="home" />
 
             <div className="pt-3">
               <button
@@ -1370,14 +1377,19 @@ export default function App() {
 
             {/* Try again & Restart controllers */}
             <div className="flex justify-center pt-4 max-w-sm mx-auto">
-              <button
+              <a
+                href="#play-again"
                 id="reset-entire-draft-after-loss-btn-unified"
-                onClick={() => handleResetTournament(true)}
-                className="w-full py-4.5 bg-[#c8aa6e] hover:bg-[#b09358] text-[#010a13] hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 font-display active:translate-y-0"
+                role="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleResetTournament(true);
+                }}
+                className="exo-replay-ad w-full py-4.5 bg-[#c8aa6e] hover:bg-[#b09358] text-[#010a13] hover:shadow-[0_0_24px_rgba(200,170,110,0.3)] hover:-translate-y-0.5 font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-150 cursor-pointer flex items-center justify-center gap-2 font-display active:translate-y-0"
               >
                 <span>🔄</span>
                 <span>{language === 'es' ? 'VOLVER A JUGAR (NUEVO DRAFT)' : 'PLAY AGAIN (NEW DRAFT)'}</span>
-              </button>
+              </a>
             </div>
           </div>
         )}
