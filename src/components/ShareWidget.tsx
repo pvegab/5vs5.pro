@@ -64,6 +64,7 @@ type ShareTextSet = {
 };
 
 const SITE_URL = 'https://5vs5.pro';
+const SITE_LABEL = '5vs5.pro';
 
 const SHARE_LOCALES: Record<Language, ShareTextSet> = {
   es: {
@@ -159,7 +160,7 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     shortCtaQuestion: 'Pourras-tu battre les meilleurs de l’histoire ?',
     playFree: 'Joue GRATUITEMENT ici :',
     recordWin: () => '🏆 Record 6-0 ! J’ai conquis le Worlds Challenge avec une équipe légendaire.',
-    recordLoss: (wins, roundName) => `🥈 Record de ${wins}-1 ! J’ai avancé dans le tournoi avant de tomber avec honneur en : ${roundName}.`,
+    recordLoss: (wins, roundName) => `🥈 Record de ${wins}-1 ! J’ai avancé dans les éliminatoires avant de tomber avec honneur en : ${roundName}.`,
     recordFirstLoss: '⚔️ Je suis tombé dès le premier match, mais mon équipe reviendra plus forte.',
   },
   de: {
@@ -191,7 +192,7 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     shortCtaQuestion: 'Kannst du die Besten der Geschichte schlagen?',
     playFree: 'Spiele GRATIS hier:',
     recordWin: () => '🏆 6-0 Rekord! Ich habe die Worlds Challenge mit einem legendären Team erobert.',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 Rekord! Ich kam durch die K.-o.-Runden und fiel ehrenvoll in: ${roundName}.`,
+    recordLoss: (wins, roundName) => `🥈 ${wins}-1 Rekord! Ich überstand die K.-o.-Runden und fiel ehrenvoll in: ${roundName}.`,
     recordFirstLoss: '⚔️ Ich bin im ersten Match gefallen, aber mein Team kommt stärker zurück.',
   },
   it: {
@@ -287,7 +288,7 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     shortCtaQuestion: 'Сможешь победить лучших в истории?',
     playFree: 'Играй БЕСПЛАТНО здесь:',
     recordWin: () => '🏆 Рекорд 6-0! Я покорил Worlds Challenge с легендарной командой.',
-    recordLoss: (wins, roundName) => `🥈 Рекорд ${wins}-1! Я прошёл плей-офф и пал с честью на этапе: ${roundName}.`,
+    recordLoss: (wins, roundName) => `🥈 Рекорд ${wins}-1! Я прошёл через плей-офф и пал с честью на этапе: ${roundName}.`,
     recordFirstLoss: '⚔️ Я выбыл в первом матче, но моя команда вернётся сильнее.',
   },
   ko: {
@@ -319,7 +320,7 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     shortCtaQuestion: '역사상 최고의 팀들을 이길 수 있을까요?',
     playFree: '무료로 플레이하기:',
     recordWin: () => '🏆 6-0 기록! 전설적인 팀으로 Worlds Challenge를 정복했습니다.',
-    recordLoss: (wins, roundName) => `🥈 ${wins}-1 기록! 예선을 돌파했지만 명예롭게 쓰러진 곳: ${roundName}.`,
+    recordLoss: (wins, roundName) => `🥈 ${wins}-1 기록! 토너먼트를 돌파했지만 명예롭게 쓰러진 곳: ${roundName}.`,
     recordFirstLoss: '⚔️ 첫 경기에서 탈락했지만, 제 팀은 더 강하게 돌아올 준비가 됐습니다.',
   },
   zh: {
@@ -436,8 +437,6 @@ ${getRoundReachedText()}
 
 ${getRoundReachedText()}
 
-
-
 🎮 ${activeDict.shortCtaQuestion} ${activeDict.playFree}
 
 👉 ${SITE_URL}`;
@@ -507,6 +506,12 @@ ${getRoundReachedText()}
     ctx.textAlign = 'left';
     ctx.fillText('WORLDS CHALLENGE', 50, 60);
 
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(240, 230, 210, 0.9)';
+    ctx.font = 'bold 16px "JetBrains Mono", monospace';
+    ctx.fillText(SITE_LABEL, width - 50, 60);
+
+    ctx.textAlign = 'left';
     ctx.font = '900 38px "Outfit", "Inter", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.fillText(isWin ? 'SUMMONER CHAMPION CARD' : 'SUMMONER RESULT CARD', 50, 105);
