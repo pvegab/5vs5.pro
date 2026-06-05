@@ -4,6 +4,7 @@ import { Language } from '../locales';
 
 interface LeaderboardEntry {
   id?: number;
+  position?: number;
   name: string;
   countryCode: string;
   flag: string;
@@ -43,9 +44,13 @@ const TEXT: Record<Language, {
   coachPlaceholder: string;
   selectFlag: string;
   saveResult: string;
+  saving: string;
   successTitle: string;
   successDesc: string;
-  honorWall: string;
+  topRanking: string;
+  nearbyRanking: string;
+  yourPosition: string;
+  of: string;
   coach: string;
   record: string;
   kd: string;
@@ -56,6 +61,7 @@ const TEXT: Record<Language, {
   hard: string;
   normal: string;
   saveError: string;
+  you: string;
 }> = {
   es: {
     rankingTitle: 'RANKING MUNDIAL',
@@ -66,9 +72,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'Ej: Coach Melzhet, KkOma...',
     selectFlag: 'SELECCIONA TU BANDERA',
     saveResult: 'GUARDAR RESULTADOS EN LÍNEA',
+    saving: 'GUARDANDO...',
     successTitle: '¡REGISTRO COMPLETADO CORRECTAMENTE!',
-    successDesc: 'Tu resultado ya está fijado en el muro de honor de entrenadores.',
-    honorWall: 'MURO DE HONOR DE ENTRENADORES',
+    successDesc: 'Tu resultado ya está fijado en el ranking mundial.',
+    topRanking: 'TOP 10 GLOBAL',
+    nearbyRanking: 'TU POSICIÓN EN EL RANKING',
+    yourPosition: 'Tu posición',
+    of: 'de',
     coach: 'ENTRENADOR',
     record: 'RÉCORD',
     kd: 'K/D PARTIDAS',
@@ -79,6 +89,7 @@ const TEXT: Record<Language, {
     hard: 'DIFÍCIL',
     normal: 'NORMAL',
     saveError: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
+    you: 'TÚ',
   },
   en: {
     rankingTitle: 'GLOBAL RANKING',
@@ -89,9 +100,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'E.g. Coach Yamato...',
     selectFlag: 'SELECT YOUR FLAG',
     saveResult: 'SAVE ONLINE RESULT',
+    saving: 'SAVING...',
     successTitle: 'RESULT SAVED SUCCESSFULLY!',
-    successDesc: 'Your result is now locked into the coach hall of fame.',
-    honorWall: 'COACH HALL OF FAME',
+    successDesc: 'Your result is now locked into the global ranking.',
+    topRanking: 'GLOBAL TOP 10',
+    nearbyRanking: 'YOUR RANKING POSITION',
+    yourPosition: 'Your position',
+    of: 'of',
     coach: 'COACH',
     record: 'RECORD',
     kd: 'SIMULATION K/D',
@@ -102,6 +117,7 @@ const TEXT: Record<Language, {
     hard: 'HARD',
     normal: 'NORMAL',
     saveError: 'Could not save the result. Please try again.',
+    you: 'YOU',
   },
   fr: {
     rankingTitle: 'CLASSEMENT MONDIAL',
@@ -112,9 +128,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'Ex : Coach Yamato...',
     selectFlag: 'SÉLECTIONNEZ VOTRE DRAPEAU',
     saveResult: 'ENREGISTRER LE RÉSULTAT EN LIGNE',
+    saving: 'ENREGISTREMENT...',
     successTitle: 'RÉSULTAT ENREGISTRÉ AVEC SUCCÈS !',
-    successDesc: 'Votre résultat est maintenant inscrit au panthéon des coachs.',
-    honorWall: 'PANTHÉON DES COACHS',
+    successDesc: 'Votre résultat est maintenant inscrit au classement mondial.',
+    topRanking: 'TOP 10 MONDIAL',
+    nearbyRanking: 'VOTRE POSITION AU CLASSEMENT',
+    yourPosition: 'Votre position',
+    of: 'sur',
     coach: 'COACH',
     record: 'RECORD',
     kd: 'K/D SIMULATION',
@@ -125,9 +145,10 @@ const TEXT: Record<Language, {
     hard: 'DIFFICILE',
     normal: 'NORMAL',
     saveError: 'Impossible d’enregistrer le résultat. Réessayez.',
+    you: 'VOUS',
   },
   de: {
-    rankingTitle: 'WELTRANGING',
+    rankingTitle: 'WELTRANKING',
     rankingSubtitle: 'TRITT GEGEN DIE IKONISCHSTEN COACHES DER WELT AN',
     runScore: 'DEIN RUN-SCORE',
     submitTitle: 'TRAGE DEINEN ERFOLG ALS COACH EIN',
@@ -135,9 +156,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'z. B. Coach Yamato...',
     selectFlag: 'WÄHLE DEINE FLAGGE',
     saveResult: 'ERGEBNIS ONLINE SPEICHERN',
+    saving: 'SPEICHERT...',
     successTitle: 'ERGEBNIS ERFOLGREICH GESPEICHERT!',
-    successDesc: 'Dein Ergebnis steht nun in der Hall of Fame der Coaches.',
-    honorWall: 'HALL OF FAME DER COACHES',
+    successDesc: 'Dein Ergebnis steht nun im Weltranking.',
+    topRanking: 'GLOBAL TOP 10',
+    nearbyRanking: 'DEINE POSITION IM RANKING',
+    yourPosition: 'Deine Position',
+    of: 'von',
     coach: 'COACH',
     record: 'REKORD',
     kd: 'SIMULATION K/D',
@@ -148,6 +173,7 @@ const TEXT: Record<Language, {
     hard: 'SCHWER',
     normal: 'NORMAL',
     saveError: 'Das Ergebnis konnte nicht gespeichert werden. Bitte erneut versuchen.',
+    you: 'DU',
   },
   it: {
     rankingTitle: 'CLASSIFICA MONDIALE',
@@ -158,9 +184,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'Es: Coach Yamato...',
     selectFlag: 'SELEZIONA LA TUA BANDIERA',
     saveResult: 'SALVA RISULTATO ONLINE',
+    saving: 'SALVATAGGIO...',
     successTitle: 'RISULTATO SALVATO CORRETTAMENTE!',
-    successDesc: 'Il tuo risultato è ora nella hall of fame dei coach.',
-    honorWall: 'HALL OF FAME DEI COACH',
+    successDesc: 'Il tuo risultato è ora nella classifica mondiale.',
+    topRanking: 'TOP 10 GLOBALE',
+    nearbyRanking: 'LA TUA POSIZIONE IN CLASSIFICA',
+    yourPosition: 'La tua posizione',
+    of: 'di',
     coach: 'COACH',
     record: 'RECORD',
     kd: 'K/D SIMULAZIONE',
@@ -171,6 +201,7 @@ const TEXT: Record<Language, {
     hard: 'DIFFICILE',
     normal: 'NORMALE',
     saveError: 'Impossibile salvare il risultato. Riprova.',
+    you: 'TU',
   },
   pt: {
     rankingTitle: 'RANKING MUNDIAL',
@@ -181,9 +212,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'Ex: Coach Yamato...',
     selectFlag: 'SELECIONA A TUA BANDEIRA',
     saveResult: 'GUARDAR RESULTADO ONLINE',
+    saving: 'A GUARDAR...',
     successTitle: 'RESULTADO GUARDADO COM SUCESSO!',
-    successDesc: 'O teu resultado já está no mural de honra dos treinadores.',
-    honorWall: 'MURAL DE HONRA DOS TREINADORES',
+    successDesc: 'O teu resultado já está no ranking mundial.',
+    topRanking: 'TOP 10 GLOBAL',
+    nearbyRanking: 'A TUA POSIÇÃO NO RANKING',
+    yourPosition: 'A tua posição',
+    of: 'de',
     coach: 'TREINADOR',
     record: 'RECORDE',
     kd: 'K/D SIMULAÇÃO',
@@ -194,6 +229,7 @@ const TEXT: Record<Language, {
     hard: 'DIFÍCIL',
     normal: 'NORMAL',
     saveError: 'Não foi possível guardar o resultado. Tenta novamente.',
+    you: 'TU',
   },
   ru: {
     rankingTitle: 'МИРОВОЙ РЕЙТИНГ',
@@ -204,9 +240,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: 'Напр.: Coach Yamato...',
     selectFlag: 'ВЫБЕРИТЕ ФЛАГ',
     saveResult: 'СОХРАНИТЬ РЕЗУЛЬТАТ ОНЛАЙН',
+    saving: 'СОХРАНЕНИЕ...',
     successTitle: 'РЕЗУЛЬТАТ УСПЕШНО СОХРАНЁН!',
-    successDesc: 'Ваш результат добавлен в зал славы тренеров.',
-    honorWall: 'ЗАЛ СЛАВЫ ТРЕНЕРОВ',
+    successDesc: 'Ваш результат добавлен в мировой рейтинг.',
+    topRanking: 'ТОП-10 МИРА',
+    nearbyRanking: 'ВАША ПОЗИЦИЯ В РЕЙТИНГЕ',
+    yourPosition: 'Ваша позиция',
+    of: 'из',
     coach: 'ТРЕНЕР',
     record: 'РЕКОРД',
     kd: 'K/D СИМУЛЯЦИИ',
@@ -217,6 +257,7 @@ const TEXT: Record<Language, {
     hard: 'СЛОЖНЫЙ',
     normal: 'ОБЫЧНЫЙ',
     saveError: 'Не удалось сохранить результат. Попробуйте ещё раз.',
+    you: 'ВЫ',
   },
   ko: {
     rankingTitle: '월드 랭킹',
@@ -227,9 +268,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: '예: Coach Yamato...',
     selectFlag: '국기 선택',
     saveResult: '온라인 결과 저장',
+    saving: '저장 중...',
     successTitle: '결과가 성공적으로 저장되었습니다!',
-    successDesc: '당신의 기록이 코치 명예의 전당에 등록되었습니다.',
-    honorWall: '코치 명예의 전당',
+    successDesc: '당신의 기록이 글로벌 랭킹에 등록되었습니다.',
+    topRanking: '글로벌 TOP 10',
+    nearbyRanking: '나의 랭킹 위치',
+    yourPosition: '나의 위치',
+    of: '/',
     coach: '코치',
     record: '기록',
     kd: '시뮬레이션 K/D',
@@ -240,6 +285,7 @@ const TEXT: Record<Language, {
     hard: '어려움',
     normal: '일반',
     saveError: '결과를 저장할 수 없습니다. 다시 시도해 주세요.',
+    you: '나',
   },
   zh: {
     rankingTitle: '世界排名',
@@ -250,9 +296,13 @@ const TEXT: Record<Language, {
     coachPlaceholder: '例如：Coach Yamato...',
     selectFlag: '选择你的旗帜',
     saveResult: '在线保存结果',
+    saving: '保存中...',
     successTitle: '结果已成功保存！',
-    successDesc: '你的结果已进入教练荣誉榜。',
-    honorWall: '教练荣誉榜',
+    successDesc: '你的结果已进入世界排名。',
+    topRanking: '全球前 10',
+    nearbyRanking: '你的排名位置',
+    yourPosition: '你的排名',
+    of: '/',
     coach: '教练',
     record: '战绩',
     kd: '模拟 K/D',
@@ -263,245 +313,35 @@ const TEXT: Record<Language, {
     hard: '困难',
     normal: '普通',
     saveError: '无法保存结果。请重试。',
+    you: '你',
   },
 };
 
 const COUNTRIES: Country[] = [
-  {
-    code: 'AR',
-    flag: '🇦🇷',
-    names: { es: 'Argentina', en: 'Argentina', fr: 'Argentine', de: 'Argentinien', it: 'Argentina', pt: 'Argentina', ru: 'Аргентина', ko: '아르헨티나', zh: '阿根廷' },
-  },
-  {
-    code: 'AU',
-    flag: '🇦🇺',
-    names: { es: 'Australia', en: 'Australia', fr: 'Australie', de: 'Australien', it: 'Australia', pt: 'Austrália', ru: 'Австралия', ko: '호주', zh: '澳大利亚' },
-  },
-  {
-    code: 'AT',
-    flag: '🇦🇹',
-    names: { es: 'Austria', en: 'Austria', fr: 'Autriche', de: 'Österreich', it: 'Austria', pt: 'Áustria', ru: 'Австрия', ko: '오스트리아', zh: '奥地利' },
-  },
-  {
-    code: 'BE',
-    flag: '🇧🇪',
-    names: { es: 'Bélgica', en: 'Belgium', fr: 'Belgique', de: 'Belgien', it: 'Belgio', pt: 'Bélgica', ru: 'Бельгия', ko: '벨기에', zh: '比利时' },
-  },
-  {
-    code: 'BR',
-    flag: '🇧🇷',
-    names: { es: 'Brasil', en: 'Brazil', fr: 'Brésil', de: 'Brasilien', it: 'Brasile', pt: 'Brasil', ru: 'Бразилия', ko: '브라질', zh: '巴西' },
-  },
-  {
-    code: 'BG',
-    flag: '🇧🇬',
-    names: { es: 'Bulgaria', en: 'Bulgaria', fr: 'Bulgarie', de: 'Bulgarien', it: 'Bulgaria', pt: 'Bulgária', ru: 'Болгария', ko: '불가리아', zh: '保加利亚' },
-  },
-  {
-    code: 'CA',
-    flag: '🇨🇦',
-    names: { es: 'Canadá', en: 'Canada', fr: 'Canada', de: 'Kanada', it: 'Canada', pt: 'Canadá', ru: 'Канада', ko: '캐나다', zh: '加拿大' },
-  },
-  {
-    code: 'CL',
-    flag: '🇨🇱',
-    names: { es: 'Chile', en: 'Chile', fr: 'Chili', de: 'Chile', it: 'Cile', pt: 'Chile', ru: 'Чили', ko: '칠레', zh: '智利' },
-  },
-  {
-    code: 'CN',
-    flag: '🇨🇳',
-    names: { es: 'China', en: 'China', fr: 'Chine', de: 'China', it: 'Cina', pt: 'China', ru: 'Китай', ko: '중국', zh: '中国' },
-  },
-  {
-    code: 'CO',
-    flag: '🇨🇴',
-    names: { es: 'Colombia', en: 'Colombia', fr: 'Colombie', de: 'Kolumbien', it: 'Colombia', pt: 'Colômbia', ru: 'Колумбия', ko: '콜롬비아', zh: '哥伦比亚' },
-  },
-  {
-    code: 'HR',
-    flag: '🇭🇷',
-    names: { es: 'Croacia', en: 'Croatia', fr: 'Croatie', de: 'Kroatien', it: 'Croazia', pt: 'Croácia', ru: 'Хорватия', ko: '크로아티아', zh: '克罗地亚' },
-  },
-  {
-    code: 'CZ',
-    flag: '🇨🇿',
-    names: { es: 'Chequia', en: 'Czechia', fr: 'Tchéquie', de: 'Tschechien', it: 'Cechia', pt: 'Chéquia', ru: 'Чехия', ko: '체코', zh: '捷克' },
-  },
-  {
-    code: 'DK',
-    flag: '🇩🇰',
-    names: { es: 'Dinamarca', en: 'Denmark', fr: 'Danemark', de: 'Dänemark', it: 'Danimarca', pt: 'Dinamarca', ru: 'Дания', ko: '덴마크', zh: '丹麦' },
-  },
-  {
-    code: 'EC',
-    flag: '🇪🇨',
-    names: { es: 'Ecuador', en: 'Ecuador', fr: 'Équateur', de: 'Ecuador', it: 'Ecuador', pt: 'Equador', ru: 'Эквадор', ko: '에콰도르', zh: '厄瓜多尔' },
-  },
-  {
-    code: 'EG',
-    flag: '🇪🇬',
-    names: { es: 'Egipto', en: 'Egypt', fr: 'Égypte', de: 'Ägypten', it: 'Egitto', pt: 'Egito', ru: 'Египет', ko: '이집트', zh: '埃及' },
-  },
-  {
-    code: 'ES',
-    flag: '🇪🇸',
-    names: { es: 'España', en: 'Spain', fr: 'Espagne', de: 'Spanien', it: 'Spagna', pt: 'Espanha', ru: 'Испания', ko: '스페인', zh: '西班牙' },
-  },
-  {
-    code: 'FI',
-    flag: '🇫🇮',
-    names: { es: 'Finlandia', en: 'Finland', fr: 'Finlande', de: 'Finnland', it: 'Finlandia', pt: 'Finlândia', ru: 'Финляндия', ko: '핀란드', zh: '芬兰' },
-  },
-  {
-    code: 'FR',
-    flag: '🇫🇷',
-    names: { es: 'Francia', en: 'France', fr: 'France', de: 'Frankreich', it: 'Francia', pt: 'França', ru: 'Франция', ko: '프랑스', zh: '法国' },
-  },
-  {
-    code: 'DE',
-    flag: '🇩🇪',
-    names: { es: 'Alemania', en: 'Germany', fr: 'Allemagne', de: 'Deutschland', it: 'Germania', pt: 'Alemanha', ru: 'Германия', ko: '독일', zh: '德国' },
-  },
-  {
-    code: 'GR',
-    flag: '🇬🇷',
-    names: { es: 'Grecia', en: 'Greece', fr: 'Grèce', de: 'Griechenland', it: 'Grecia', pt: 'Grécia', ru: 'Греция', ko: '그리스', zh: '希腊' },
-  },
-  {
-    code: 'GB',
-    flag: '🇬🇧',
-    names: { es: 'Reino Unido', en: 'United Kingdom', fr: 'Royaume-Uni', de: 'Vereinigtes Königreich', it: 'Regno Unito', pt: 'Reino Unido', ru: 'Великобритания', ko: '영국', zh: '英国' },
-  },
-  {
-    code: 'HU',
-    flag: '🇭🇺',
-    names: { es: 'Hungría', en: 'Hungary', fr: 'Hongrie', de: 'Ungarn', it: 'Ungheria', pt: 'Hungria', ru: 'Венгрия', ko: '헝가리', zh: '匈牙利' },
-  },
-  {
-    code: 'IN',
-    flag: '🇮🇳',
-    names: { es: 'India', en: 'India', fr: 'Inde', de: 'Indien', it: 'India', pt: 'Índia', ru: 'Индия', ko: '인도', zh: '印度' },
-  },
-  {
-    code: 'ID',
-    flag: '🇮🇩',
-    names: { es: 'Indonesia', en: 'Indonesia', fr: 'Indonésie', de: 'Indonesien', it: 'Indonesia', pt: 'Indonésia', ru: 'Индонезия', ko: '인도네시아', zh: '印度尼西亚' },
-  },
-  {
-    code: 'IE',
-    flag: '🇮🇪',
-    names: { es: 'Irlanda', en: 'Ireland', fr: 'Irlande', de: 'Irland', it: 'Irlanda', pt: 'Irlanda', ru: 'Ирландия', ko: '아일랜드', zh: '爱尔兰' },
-  },
-  {
-    code: 'IT',
-    flag: '🇮🇹',
-    names: { es: 'Italia', en: 'Italy', fr: 'Italie', de: 'Italien', it: 'Italia', pt: 'Itália', ru: 'Италия', ko: '이탈리아', zh: '意大利' },
-  },
-  {
-    code: 'JP',
-    flag: '🇯🇵',
-    names: { es: 'Japón', en: 'Japan', fr: 'Japon', de: 'Japan', it: 'Giappone', pt: 'Japão', ru: 'Япония', ko: '일본', zh: '日本' },
-  },
-  {
-    code: 'KR',
-    flag: '🇰🇷',
-    names: { es: 'Corea del Sur', en: 'South Korea', fr: 'Corée du Sud', de: 'Südkorea', it: 'Corea del Sud', pt: 'Coreia do Sul', ru: 'Южная Корея', ko: '대한민국', zh: '韩国' },
-  },
-  {
-    code: 'MX',
-    flag: '🇲🇽',
-    names: { es: 'México', en: 'Mexico', fr: 'Mexique', de: 'Mexiko', it: 'Messico', pt: 'México', ru: 'Мексика', ko: '멕시코', zh: '墨西哥' },
-  },
-  {
-    code: 'MA',
-    flag: '🇲🇦',
-    names: { es: 'Marruecos', en: 'Morocco', fr: 'Maroc', de: 'Marokko', it: 'Marocco', pt: 'Marrocos', ru: 'Марокко', ko: '모로코', zh: '摩洛哥' },
-  },
-  {
-    code: 'NL',
-    flag: '🇳🇱',
-    names: { es: 'Países Bajos', en: 'Netherlands', fr: 'Pays-Bas', de: 'Niederlande', it: 'Paesi Bassi', pt: 'Países Baixos', ru: 'Нидерланды', ko: '네덜란드', zh: '荷兰' },
-  },
-  {
-    code: 'NO',
-    flag: '🇳🇴',
-    names: { es: 'Noruega', en: 'Norway', fr: 'Norvège', de: 'Norwegen', it: 'Norvegia', pt: 'Noruega', ru: 'Норвегия', ko: '노르웨이', zh: '挪威' },
-  },
-  {
-    code: 'PE',
-    flag: '🇵🇪',
-    names: { es: 'Perú', en: 'Peru', fr: 'Pérou', de: 'Peru', it: 'Perù', pt: 'Peru', ru: 'Перу', ko: '페루', zh: '秘鲁' },
-  },
-  {
-    code: 'PH',
-    flag: '🇵🇭',
-    names: { es: 'Filipinas', en: 'Philippines', fr: 'Philippines', de: 'Philippinen', it: 'Filippine', pt: 'Filipinas', ru: 'Филиппины', ko: '필리핀', zh: '菲律宾' },
-  },
-  {
-    code: 'PL',
-    flag: '🇵🇱',
-    names: { es: 'Polonia', en: 'Poland', fr: 'Pologne', de: 'Polen', it: 'Polonia', pt: 'Polónia', ru: 'Польша', ko: '폴란드', zh: '波兰' },
-  },
-  {
-    code: 'PT',
-    flag: '🇵🇹',
-    names: { es: 'Portugal', en: 'Portugal', fr: 'Portugal', de: 'Portugal', it: 'Portogallo', pt: 'Portugal', ru: 'Португалия', ko: '포르투갈', zh: '葡萄牙' },
-  },
-  {
-    code: 'RO',
-    flag: '🇷🇴',
-    names: { es: 'Rumanía', en: 'Romania', fr: 'Roumanie', de: 'Rumänien', it: 'Romania', pt: 'Roménia', ru: 'Румыния', ko: '루마니아', zh: '罗马尼亚' },
-  },
-  {
-    code: 'SA',
-    flag: '🇸🇦',
-    names: { es: 'Arabia Saudí', en: 'Saudi Arabia', fr: 'Arabie saoudite', de: 'Saudi-Arabien', it: 'Arabia Saudita', pt: 'Arábia Saudita', ru: 'Саудовская Аравия', ko: '사우디아라비아', zh: '沙特阿拉伯' },
-  },
-  {
-    code: 'RS',
-    flag: '🇷🇸',
-    names: { es: 'Serbia', en: 'Serbia', fr: 'Serbie', de: 'Serbien', it: 'Serbia', pt: 'Sérvia', ru: 'Сербия', ko: '세르비아', zh: '塞尔维亚' },
-  },
-  {
-    code: 'SE',
-    flag: '🇸🇪',
-    names: { es: 'Suecia', en: 'Sweden', fr: 'Suède', de: 'Schweden', it: 'Svezia', pt: 'Suécia', ru: 'Швеция', ko: '스웨덴', zh: '瑞典' },
-  },
-  {
-    code: 'CH',
-    flag: '🇨🇭',
-    names: { es: 'Suiza', en: 'Switzerland', fr: 'Suisse', de: 'Schweiz', it: 'Svizzera', pt: 'Suíça', ru: 'Швейцария', ko: '스위스', zh: '瑞士' },
-  },
-  {
-    code: 'TR',
-    flag: '🇹🇷',
-    names: { es: 'Turquía', en: 'Turkey', fr: 'Turquie', de: 'Türkei', it: 'Turchia', pt: 'Turquia', ru: 'Турция', ko: '튀르키예', zh: '土耳其' },
-  },
-  {
-    code: 'UA',
-    flag: '🇺🇦',
-    names: { es: 'Ucrania', en: 'Ukraine', fr: 'Ukraine', de: 'Ukraine', it: 'Ucraina', pt: 'Ucrânia', ru: 'Украина', ko: '우크라이나', zh: '乌克兰' },
-  },
-  {
-    code: 'US',
-    flag: '🇺🇸',
-    names: { es: 'Estados Unidos', en: 'United States', fr: 'États-Unis', de: 'Vereinigte Staaten', it: 'Stati Uniti', pt: 'Estados Unidos', ru: 'США', ko: '미국', zh: '美国' },
-  },
-  {
-    code: 'UY',
-    flag: '🇺🇾',
-    names: { es: 'Uruguay', en: 'Uruguay', fr: 'Uruguay', de: 'Uruguay', it: 'Uruguay', pt: 'Uruguai', ru: 'Уругвай', ko: '우루과이', zh: '乌拉圭' },
-  },
-  {
-    code: 'VE',
-    flag: '🇻🇪',
-    names: { es: 'Venezuela', en: 'Venezuela', fr: 'Venezuela', de: 'Venezuela', it: 'Venezuela', pt: 'Venezuela', ru: 'Венесуэла', ko: '베네수엘라', zh: '委内瑞拉' },
-  },
-  {
-    code: 'VN',
-    flag: '🇻🇳',
-    names: { es: 'Vietnam', en: 'Vietnam', fr: 'Vietnam', de: 'Vietnam', it: 'Vietnam', pt: 'Vietname', ru: 'Вьетнам', ko: '베트남', zh: '越南' },
-  },
+  { code: 'ES', flag: '🇪🇸', names: { es: 'España', en: 'Spain', fr: 'Espagne', de: 'Spanien', it: 'Spagna', pt: 'Espanha', ru: 'Испания', ko: '스페인', zh: '西班牙' } },
+  { code: 'DE', flag: '🇩🇪', names: { es: 'Alemania', en: 'Germany', fr: 'Allemagne', de: 'Deutschland', it: 'Germania', pt: 'Alemanha', ru: 'Германия', ko: '독일', zh: '德国' } },
+  { code: 'FR', flag: '🇫🇷', names: { es: 'Francia', en: 'France', fr: 'France', de: 'Frankreich', it: 'Francia', pt: 'França', ru: 'Франция', ko: '프랑스', zh: '法国' } },
+  { code: 'PT', flag: '🇵🇹', names: { es: 'Portugal', en: 'Portugal', fr: 'Portugal', de: 'Portugal', it: 'Portogallo', pt: 'Portugal', ru: 'Португалия', ko: '포르투갈', zh: '葡萄牙' } },
+  { code: 'IT', flag: '🇮🇹', names: { es: 'Italia', en: 'Italy', fr: 'Italie', de: 'Italien', it: 'Italia', pt: 'Itália', ru: 'Италия', ko: '이탈리아', zh: '意大利' } },
+  { code: 'GB', flag: '🇬🇧', names: { es: 'Reino Unido', en: 'United Kingdom', fr: 'Royaume-Uni', de: 'Vereinigtes Königreich', it: 'Regno Unito', pt: 'Reino Unido', ru: 'Великобритания', ko: '영국', zh: '英国' } },
+  { code: 'NL', flag: '🇳🇱', names: { es: 'Países Bajos', en: 'Netherlands', fr: 'Pays-Bas', de: 'Niederlande', it: 'Paesi Bassi', pt: 'Países Baixos', ru: 'Нидерланды', ko: '네덜란드', zh: '荷兰' } },
+  { code: 'SE', flag: '🇸🇪', names: { es: 'Suecia', en: 'Sweden', fr: 'Suède', de: 'Schweden', it: 'Svezia', pt: 'Suécia', ru: 'Швеция', ko: '스웨덴', zh: '瑞典' } },
+  { code: 'DK', flag: '🇩🇰', names: { es: 'Dinamarca', en: 'Denmark', fr: 'Danemark', de: 'Dänemark', it: 'Danimarca', pt: 'Dinamarca', ru: 'Дания', ko: '덴마크', zh: '丹麦' } },
+  { code: 'NO', flag: '🇳🇴', names: { es: 'Noruega', en: 'Norway', fr: 'Norvège', de: 'Norwegen', it: 'Norvegia', pt: 'Noruega', ru: 'Норвегия', ko: '노르웨이', zh: '挪威' } },
+  { code: 'FI', flag: '🇫🇮', names: { es: 'Finlandia', en: 'Finland', fr: 'Finlande', de: 'Finnland', it: 'Finlandia', pt: 'Finlândia', ru: 'Финляндия', ko: '핀란드', zh: '芬兰' } },
+  { code: 'PL', flag: '🇵🇱', names: { es: 'Polonia', en: 'Poland', fr: 'Pologne', de: 'Polen', it: 'Polonia', pt: 'Polónia', ru: 'Польша', ko: '폴란드', zh: '波兰' } },
+  { code: 'BE', flag: '🇧🇪', names: { es: 'Bélgica', en: 'Belgium', fr: 'Belgique', de: 'Belgien', it: 'Belgio', pt: 'Bélgica', ru: 'Бельгия', ko: '벨기에', zh: '比利时' } },
+  { code: 'CH', flag: '🇨🇭', names: { es: 'Suiza', en: 'Switzerland', fr: 'Suisse', de: 'Schweiz', it: 'Svizzera', pt: 'Suíça', ru: 'Швейцария', ko: '스위스', zh: '瑞士' } },
+  { code: 'AT', flag: '🇦🇹', names: { es: 'Austria', en: 'Austria', fr: 'Autriche', de: 'Österreich', it: 'Austria', pt: 'Áustria', ru: 'Австрия', ko: '오스트리아', zh: '奥地利' } },
+  { code: 'IE', flag: '🇮🇪', names: { es: 'Irlanda', en: 'Ireland', fr: 'Irlande', de: 'Irland', it: 'Irlanda', pt: 'Irlanda', ru: 'Ирландия', ko: '아일랜드', zh: '爱尔兰' } },
+  { code: 'CZ', flag: '🇨🇿', names: { es: 'Chequia', en: 'Czechia', fr: 'Tchéquie', de: 'Tschechien', it: 'Cechia', pt: 'Chéquia', ru: 'Чехия', ko: '체코', zh: '捷克' } },
+  { code: 'GR', flag: '🇬🇷', names: { es: 'Grecia', en: 'Greece', fr: 'Grèce', de: 'Griechenland', it: 'Grecia', pt: 'Grécia', ru: 'Греция', ko: '그리스', zh: '希腊' } },
+  { code: 'RO', flag: '🇷🇴', names: { es: 'Rumanía', en: 'Romania', fr: 'Roumanie', de: 'Rumänien', it: 'Romania', pt: 'Roménia', ru: 'Румыния', ko: '루마니아', zh: '罗马尼亚' } },
+  { code: 'BG', flag: '🇧🇬', names: { es: 'Bulgaria', en: 'Bulgaria', fr: 'Bulgarie', de: 'Bulgarien', it: 'Bulgaria', pt: 'Bulgária', ru: 'Болгария', ko: '불가리아', zh: '保加利亚' } },
+  { code: 'HR', flag: '🇭🇷', names: { es: 'Croacia', en: 'Croatia', fr: 'Croatie', de: 'Kroatien', it: 'Croazia', pt: 'Croácia', ru: 'Хорватия', ko: '크로아티아', zh: '克罗地亚' } },
+  { code: 'RS', flag: '🇷🇸', names: { es: 'Serbia', en: 'Serbia', fr: 'Serbie', de: 'Serbien', it: 'Serbia', pt: 'Sérvia', ru: 'Сербия', ko: '세르비아', zh: '塞尔维亚' } },
+  { code: 'UA', flag: '🇺🇦', names: { es: 'Ucrania', en: 'Ukraine', fr: 'Ukraine', de: 'Ukraine', it: 'Ucraina', pt: 'Ucrânia', ru: 'Украина', ko: '우크라이나', zh: '乌克兰' } },
+  { code: 'TR', flag: '🇹🇷', names: { es: 'Turquía', en: 'Turkey', fr: 'Turquie', de: 'Türkei', it: 'Turchia', pt: 'Turquia', ru: 'Турция', ko: '튀르키예', zh: '土耳其' } },
 ];
 
 const getFlagByCountryCode = (countryCode?: string) => {
@@ -526,7 +366,11 @@ export default function Leaderboard({
   const [coachName, setCoachName] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES.find(c => c.code === 'ES') || COUNTRIES[0]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [submittedEntryId, setSubmittedEntryId] = useState<number | null>(null);
+  const [personalPosition, setPersonalPosition] = useState<number | null>(null);
+  const [totalEntries, setTotalEntries] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
   const t = TEXT[lang] || TEXT.es;
@@ -539,10 +383,11 @@ export default function Leaderboard({
   const runScore = Math.max(0, Math.round(baselineScore * (gameMode === 'lecHard' ? 1.5 : 1.0)));
   const recordString = `${winsCount}W-${lossesCount}L`;
 
-  const loadLeaderboard = async () => {
+  const loadTopLeaderboard = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(API_URL);
+
+      const response = await fetch(`${API_URL}?limit=10`);
 
       if (!response.ok) {
         throw new Error('No se pudo cargar el ranking');
@@ -559,19 +404,20 @@ export default function Leaderboard({
   };
 
   useEffect(() => {
-    loadLeaderboard();
+    loadTopLeaderboard();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coachName.trim()) return;
+    if (!coachName.trim() || isSubmitting) return;
 
     setSubmitError('');
+    setIsSubmitting(true);
 
     const newEntry: LeaderboardEntry = {
       name: coachName.trim(),
       countryCode: selectedCountry.code,
-      flag: selectedCountry.flag,
+      flag: '',
       record: recordString,
       kills: totalKills,
       deaths: totalDeaths,
@@ -592,12 +438,25 @@ export default function Leaderboard({
         throw new Error('No se pudo guardar el resultado');
       }
 
+      const result = await response.json();
+
       setHasSubmitted(true);
       setCoachName('');
-      await loadLeaderboard();
+
+      setSubmittedEntryId(result.id || null);
+      setPersonalPosition(result.position || null);
+      setTotalEntries(result.total || null);
+
+      if (Array.isArray(result.nearby)) {
+        setEntries(result.nearby);
+      } else {
+        await loadTopLeaderboard();
+      }
     } catch (error) {
       console.error(error);
       setSubmitError(t.saveError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -676,10 +535,13 @@ export default function Leaderboard({
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-gradient-to-r from-[#c8aa6e] to-[#785a28] text-[#010a13] hover:brightness-110 active:scale-[0.99] transition-all font-black text-xs uppercase tracking-widest rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-1.5 font-display"
+            disabled={isSubmitting}
+            className={`w-full py-3.5 bg-gradient-to-r from-[#c8aa6e] to-[#785a28] text-[#010a13] hover:brightness-110 active:scale-[0.99] transition-all font-black text-xs uppercase tracking-widest rounded-xl shadow-lg flex items-center justify-center gap-1.5 font-display ${
+              isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+            }`}
           >
             <span>💾</span>
-            <span>{t.saveResult}</span>
+            <span>{isSubmitting ? t.saving : t.saveResult}</span>
           </button>
         </form>
       ) : (
@@ -691,12 +553,18 @@ export default function Leaderboard({
           <p className="text-[10px] text-[#a09b8c] font-mono mt-1">
             {t.successDesc}
           </p>
+
+          {personalPosition && totalEntries && (
+            <p className="text-[#f0e6d2] text-sm font-black mt-3 font-mono">
+              {t.yourPosition}: #{personalPosition} {t.of} {totalEntries}
+            </p>
+          )}
         </div>
       )}
 
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-[#a09b8c] tracking-widest uppercase font-mono">
-          {t.honorWall}
+          {hasSubmitted ? t.nearbyRanking : t.topRanking}
         </h4>
 
         <div className="bg-[#010a13] border border-[#c8aa6e]/15 rounded-xl overflow-hidden shadow-inner">
@@ -729,34 +597,46 @@ export default function Leaderboard({
                   </tr>
                 ) : (
                   entries.map((entry, index) => {
-                    const isTop3 = index < 3;
-                    const rowBg = index === 0
-                      ? 'bg-[#c8aa6e]/5 hover:bg-[#c8aa6e]/10'
-                      : index % 2 === 0
-                        ? 'bg-[#010a13] hover:bg-[#091428]/35'
-                        : 'bg-[#050c14] hover:bg-[#091428]/45';
+                    const position = entry.position || index + 1;
+                    const isTop3 = position <= 3;
+                    const isCurrentUser = submittedEntryId !== null && entry.id === submittedEntryId;
+
+                    const rowBg = isCurrentUser
+                      ? 'bg-emerald-500/15 border-y border-emerald-400/30'
+                      : position === 1
+                        ? 'bg-[#c8aa6e]/5 hover:bg-[#c8aa6e]/10'
+                        : index % 2 === 0
+                          ? 'bg-[#010a13] hover:bg-[#091428]/35'
+                          : 'bg-[#050c14] hover:bg-[#091428]/45';
 
                     return (
                       <tr key={`${entry.id || entry.name}-${entry.score}-${index}`} className={`transition-all duration-155 text-[11px] ${rowBg}`}>
                         <td className="py-3 px-4 text-center font-bold">
                           {isTop3 ? (
                             <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${
-                              index === 0 ? 'bg-amber-400 text-[#010a13] font-black shadow-md' :
-                              index === 1 ? 'bg-slate-300 text-[#010a13] font-black shadow-md' :
+                              position === 1 ? 'bg-amber-400 text-[#010a13] font-black shadow-md' :
+                              position === 2 ? 'bg-slate-300 text-[#010a13] font-black shadow-md' :
                               'bg-amber-600 text-[#010a13] font-black shadow-md'
                             }`}>
-                              {index + 1}
+                              {position}
                             </span>
                           ) : (
-                            <span className="text-[#a09b8c]">{index + 1}</span>
+                            <span className={isCurrentUser ? 'text-emerald-400 font-black' : 'text-[#a09b8c]'}>
+                              {position}
+                            </span>
                           )}
                         </td>
 
-                        <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[150px] truncate">
+                        <td className="py-3 px-4 font-bold text-[#f0e6d2] max-w-[170px] truncate">
                           <span className="mr-2" title={entry.countryCode}>
                             {getFlagByCountryCode(entry.countryCode)}
                           </span>
                           <span>{entry.name}</span>
+                          {isCurrentUser && (
+                            <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-400 text-[8px] font-black uppercase">
+                              {t.you}
+                            </span>
+                          )}
                         </td>
 
                         <td className="py-3 px-4 text-center font-semibold text-[#c8aa6e] whitespace-nowrap">
