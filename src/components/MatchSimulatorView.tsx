@@ -1110,7 +1110,8 @@ export default function MatchSimulatorView({
 
 
   return (
-    <div id="combat-simulation-view-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 max-w-7xl mx-auto">
+    <>
+      <div id="combat-simulation-view-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 max-w-7xl mx-auto">
       {/* Competitor Panel (Col Span 5) */}
       <div className="lg:col-span-5 flex flex-col gap-6">
         <div id="simulated-matchup-header" className="bg-[#091428] border border-[#c8aa6e]/35 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
@@ -1381,19 +1382,22 @@ export default function MatchSimulatorView({
                   </button>
                 </div>
               )}
-
-              {(simulator.status === 'win' || simulator.status === 'loss') && (
-                <ExoClickAd
-                  placement="outstreamResult"
-                  subId={`match_result_round_${currentRound + 1}_${simulator.status}`}
-                  className="my-2"
-                  minHeight={280}
-                />
-              )}
             </div>
           )}
         </div>
       </div>
     </div>
+
+      {gameResultTriggered && !isPlayingEvents && (simulator.status === 'win' || simulator.status === 'loss') && (
+        <div className="max-w-5xl mx-auto px-4">
+          <ExoClickAd
+            placement="outstreamResult"
+            subId={`match_result_round_${currentRound + 1}_${simulator.status}`}
+            className="my-4"
+            minHeight={0}
+          />
+        </div>
+      )}
+    </>
   );
 }
