@@ -28,6 +28,7 @@ interface ShareWidgetProps {
   matchHistory: MatchHistoryItem[];
   status: 'victory' | 'gameover';
   roundIndex: number;
+  gameMode?: 'normal' | 'lecHard';
   lang?: Language;
 }
 
@@ -59,6 +60,9 @@ type ShareTextSet = {
   ctaQuestion: string;
   shortCtaQuestion: string;
   playFree: string;
+  modeLabel: string;
+  normalModeName: string;
+  lecHardModeName: string;
   recordWin: (wins: number) => string;
   recordLoss: (wins: number, roundName: string) => string;
   recordFirstLoss: string;
@@ -96,6 +100,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: '¿Crees que tu equipo puede vencer a los mejores de la historia y superarme?',
     shortCtaQuestion: '¿Podrás vencer a los mejores de la historia?',
     playFree: 'Juega GRATIS aquí:',
+    modeLabel: 'Modo',
+    normalModeName: 'Mundial normal',
+    lecHardModeName: 'Camino LEC al Mundial',
     recordWin: () => '🏆 ¡Récord de 6-0! Conseguí conquistar el Worlds Challenge con un equipo de leyenda.',
     recordLoss: (wins, roundName) => `🥈 ¡Récord de ${wins}-1! Conseguí superar las eliminatorias hasta caer con honor de pie en: ${roundName}.`,
     recordFirstLoss: '⚔️ Caí en el primer encuentro, pero mi equipo ya está listo para volver más fuerte.',
@@ -128,6 +135,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Do you think your team can beat the best in history and surpass me?',
     shortCtaQuestion: 'Can you beat the best in history?',
     playFree: 'Play FREE here:',
+    modeLabel: 'Mode',
+    normalModeName: 'Normal Worlds',
+    lecHardModeName: 'LEC Path to Worlds',
     recordWin: () => '🏆 6-0 record! I conquered the Worlds Challenge with a legendary team.',
     recordLoss: (wins, roundName) => `🥈 ${wins}-1 record! I advanced through the bracket and fell with honor at: ${roundName}.`,
     recordFirstLoss: '⚔️ I fell in the opening match, but my team is ready to come back stronger.',
@@ -160,6 +170,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Penses-tu que ton équipe peut battre les meilleurs de l’histoire et me dépasser ?',
     shortCtaQuestion: 'Pourras-tu battre les meilleurs de l’histoire ?',
     playFree: 'Joue GRATUITEMENT ici :',
+    modeLabel: 'Mode',
+    normalModeName: 'Mondial normal',
+    lecHardModeName: 'Route LEC vers le Mondial',
     recordWin: () => '🏆 Record 6-0 ! J’ai conquis le Worlds Challenge avec une équipe légendaire.',
     recordLoss: (wins, roundName) => `🥈 Record de ${wins}-1 ! J’ai avancé dans les éliminatoires avant de tomber avec honneur en : ${roundName}.`,
     recordFirstLoss: '⚔️ Je suis tombé dès le premier match, mais mon équipe reviendra plus forte.',
@@ -192,6 +205,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Glaubst du, dein Team kann die Besten der Geschichte schlagen und mich übertreffen?',
     shortCtaQuestion: 'Kannst du die Besten der Geschichte schlagen?',
     playFree: 'Spiele GRATIS hier:',
+    modeLabel: 'Modus',
+    normalModeName: 'Normaler Worlds-Modus',
+    lecHardModeName: 'LEC-Pfad zu Worlds',
     recordWin: () => '🏆 6-0 Rekord! Ich habe die Worlds Challenge mit einem legendären Team erobert.',
     recordLoss: (wins, roundName) => `🥈 ${wins}-1 Rekord! Ich überstand die K.-o.-Runden und fiel ehrenvoll in: ${roundName}.`,
     recordFirstLoss: '⚔️ Ich bin im ersten Match gefallen, aber mein Team kommt stärker zurück.',
@@ -224,6 +240,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Pensi che il tuo team possa battere i migliori della storia e superarmi?',
     shortCtaQuestion: 'Riuscirai a battere i migliori della storia?',
     playFree: 'Gioca GRATIS qui:',
+    modeLabel: 'Modalità',
+    normalModeName: 'Mondiale normale',
+    lecHardModeName: 'Cammino LEC verso i Worlds',
     recordWin: () => '🏆 Record 6-0! Ho conquistato il Worlds Challenge con un team leggendario.',
     recordLoss: (wins, roundName) => `🥈 Record di ${wins}-1! Ho superato le eliminatorie fino a cadere con onore in: ${roundName}.`,
     recordFirstLoss: '⚔️ Sono caduto al primo incontro, ma il mio team tornerà più forte.',
@@ -256,6 +275,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Achas que a tua equipa consegue vencer os melhores da história e superar-me?',
     shortCtaQuestion: 'Consegues vencer os melhores da história?',
     playFree: 'Joga GRÁTIS aqui:',
+    modeLabel: 'Modo',
+    normalModeName: 'Mundial normal',
+    lecHardModeName: 'Caminho LEC para o Mundial',
     recordWin: () => '🏆 Recorde 6-0! Conquistei o Worlds Challenge com uma equipa lendária.',
     recordLoss: (wins, roundName) => `🥈 Recorde de ${wins}-1! Avancei nas eliminatórias até cair com honra em: ${roundName}.`,
     recordFirstLoss: '⚔️ Caí no primeiro encontro, mas a minha equipa vai voltar mais forte.',
@@ -288,6 +310,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: 'Думаешь, твоя команда сможет победить лучших в истории и превзойти меня?',
     shortCtaQuestion: 'Сможешь победить лучших в истории?',
     playFree: 'Играй БЕСПЛАТНО здесь:',
+    modeLabel: 'Режим',
+    normalModeName: 'Обычный Worlds',
+    lecHardModeName: 'Путь LEC к Worlds',
     recordWin: () => '🏆 Рекорд 6-0! Я покорил Worlds Challenge с легендарной командой.',
     recordLoss: (wins, roundName) => `🥈 Рекорд ${wins}-1! Я прошёл через плей-офф и пал с честью на этапе: ${roundName}.`,
     recordFirstLoss: '⚔️ Я выбыл в первом матче, но моя команда вернётся сильнее.',
@@ -320,6 +345,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: '당신의 팀이 역사상 최고의 팀들을 꺾고 저를 넘어설 수 있을까요?',
     shortCtaQuestion: '역사상 최고의 팀들을 이길 수 있을까요?',
     playFree: '무료로 플레이하기:',
+    modeLabel: '모드',
+    normalModeName: '일반 월즈',
+    lecHardModeName: 'LEC 월즈 루트',
     recordWin: () => '🏆 6-0 기록! 전설적인 팀으로 Worlds Challenge를 정복했습니다.',
     recordLoss: (wins, roundName) => `🥈 ${wins}-1 기록! 토너먼트를 돌파했지만 명예롭게 쓰러진 곳: ${roundName}.`,
     recordFirstLoss: '⚔️ 첫 경기에서 탈락했지만, 제 팀은 더 강하게 돌아올 준비가 됐습니다.',
@@ -352,6 +380,9 @@ const SHARE_LOCALES: Record<Language, ShareTextSet> = {
     ctaQuestion: '你觉得你的队伍能击败历史最强并超越我吗？',
     shortCtaQuestion: '你能击败历史最强吗？',
     playFree: '免费游玩：',
+    modeLabel: '模式',
+    normalModeName: '普通全球赛',
+    lecHardModeName: 'LEC 通往全球总决赛路线',
     recordWin: () => '🏆 6-0 战绩！我用一支传奇队伍征服了 Worlds Challenge。',
     recordLoss: (wins, roundName) => `🥈 ${wins}-1 战绩！我一路通过淘汰赛，最终光荣倒在：${roundName}。`,
     recordFirstLoss: '⚔️ 我在第一场比赛中落败，但我的队伍会更强地回归。',
@@ -365,6 +396,7 @@ export default function ShareWidget({
   matchHistory,
   status,
   roundIndex,
+  gameMode = 'normal',
   lang = 'es',
 }: ShareWidgetProps) {
   const [generatingImage, setGeneratingImage] = useState(false);
@@ -373,6 +405,8 @@ export default function ShareWidget({
 
   const activeDict = SHARE_LOCALES[lang] || SHARE_LOCALES.es;
   const isWin = status === 'victory';
+  const activeModeName = gameMode === 'lecHard' ? activeDict.lecHardModeName : activeDict.normalModeName;
+  const getModeLine = () => `${activeDict.modeLabel}: ${activeModeName}`;
 
   const finalRecordMsg = isWin
     ? activeDict.victoryStat
@@ -388,19 +422,30 @@ export default function ShareWidget({
   const getRoundReachedText = () => {
     const wins = matchHistory.filter(m => m.result === 'W').length;
 
-    if (isWin) return activeDict.recordWin(wins);
-    if (wins === 0) return activeDict.recordFirstLoss;
-
-    const limitRound = matchHistory.length || roundIndex + 1;
-    let fellRoundName = '';
-
-    try {
-      fellRoundName = getLocalizedRoundName(limitRound - 1, 'lecHard', lang);
-    } catch (e) {
-      fellRoundName = `R${limitRound}`;
+    if (isWin) {
+      return `${activeDict.recordWin(wins)}
+${getModeLine()}`;
     }
 
-    return activeDict.recordLoss(wins, fellRoundName);
+    if (wins === 0) {
+      return `${activeDict.recordFirstLoss}
+${getModeLine()}`;
+    }
+
+    const losingMatch = [...matchHistory].reverse().find(m => m.result === 'L');
+    const fallbackRoundIndex = Math.max(0, Math.min(5, roundIndex));
+    const actualRoundIndex = typeof losingMatch?.roundIndex === 'number' ? losingMatch.roundIndex : fallbackRoundIndex;
+
+    let fellRoundName = losingMatch?.roundName || '';
+
+    try {
+      fellRoundName = getLocalizedRoundName(actualRoundIndex, gameMode, lang);
+    } catch (e) {
+      fellRoundName = fellRoundName || `R${actualRoundIndex + 1}`;
+    }
+
+    return `${activeDict.recordLoss(wins, fellRoundName)}
+${getModeLine()}`;
   };
 
   const getFullShareText = () => {
@@ -414,11 +459,11 @@ export default function ShareWidget({
     return `${activeDict.title}
 ${getRoundReachedText()}
 
-🛡️ ${activeDict.top}: ${dTop}
-⚔️ ${activeDict.jungle}: ${dJungle}
+⚔️ ${activeDict.top}: ${dTop}
+🌿 ${activeDict.jungle}: ${dJungle}
 🔮 ${activeDict.mid}: ${dMid}
 🎯 ${activeDict.adc}: ${dAdc}
-⭐ ${activeDict.support}: ${dSup}
+🛡️ ${activeDict.support}: ${dSup}
 🧠 ${activeDict.coach}: ${dCoach}
 
 🎮 ${activeDict.ctaQuestion} ${activeDict.playFree}
@@ -580,11 +625,11 @@ ${getRoundReachedText()}
     const rowHeight = 78;
 
     const rolesList: { key: keyof TeamDraft; label: string; icon: string }[] = [
-      { key: 'top', label: activeDict.top, icon: '🛡️' },
-      { key: 'jungle', label: activeDict.jungle, icon: '⚔️' },
+      { key: 'top', label: activeDict.top, icon: '⚔️' },
+      { key: 'jungle', label: activeDict.jungle, icon: '🌿' },
       { key: 'mid', label: activeDict.mid, icon: '🔮' },
       { key: 'adc', label: activeDict.adc, icon: '🎯' },
-      { key: 'support', label: activeDict.support, icon: '⭐' },
+      { key: 'support', label: activeDict.support, icon: '🛡️' },
       { key: 'coach', label: activeDict.coach, icon: '🧠' },
     ];
 
@@ -646,7 +691,7 @@ ${getRoundReachedText()}
 
   useEffect(() => {
     generateCanvasImage();
-  }, [draft, teamScore, synergyDetails, matchHistory, lang]);
+  }, [draft, teamScore, synergyDetails, matchHistory, gameMode, lang]);
 
   const handleDownloadImage = () => {
     const activeDataUrl = canvasDataUrl || generateCanvasImage();
