@@ -7,7 +7,7 @@ import RouletteWheel from './components/RouletteWheel';
 import MatchSimulatorView from './components/MatchSimulatorView';
 import ShareWidget from './components/ShareWidget';
 import Leaderboard from './components/Leaderboard';
-import { ExoFullpageReplayTags, ExoResponsiveBanner, ExoVideoSliderOnce } from './components/ExoClickAd';
+import ExoClickAd, { ExoFullpageReplayTags, ExoResponsiveBanner, ExoVideoSliderOnce } from './components/ExoClickAd';
 import { Language, LANGUAGES, TRANSLATIONS, getLocalizedRoundName, getLocalizedShortRoundName } from './locales';
 import { Trophy, RefreshCw, Star, Swords, Zap, Flame, Sparkles, ChevronRight, Check, Info } from 'lucide-react';
 import { playDraftLock } from './utils/audio';
@@ -834,8 +834,6 @@ export default function App() {
               </ul>
             </div>
 
-            <ExoResponsiveBanner subId="home" />
-
             <div className="pt-3">
               <button
                 id="btn-start-game"
@@ -845,6 +843,8 @@ export default function App() {
                 {activeTrans.ctaStart}
               </button>
             </div>
+
+            <ExoResponsiveBanner subId="home_after_start_button" />
           </div>
         )}
 
@@ -1390,6 +1390,15 @@ export default function App() {
                 <span>🔄</span>
                 <span>{language === 'es' ? 'VOLVER A JUGAR (NUEVO DRAFT)' : 'PLAY AGAIN (NEW DRAFT)'}</span>
               </a>
+            </div>
+
+            <div className="max-w-2xl mx-auto pt-2">
+              <ExoClickAd
+                placement="nativeFinal"
+                subId={`native_final_below_play_again_${phase}`}
+                className="mt-4"
+                minHeight={0}
+              />
             </div>
           </div>
         )}
