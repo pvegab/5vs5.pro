@@ -704,11 +704,32 @@ export default function App() {
     }
   }, [adClickCount]);
 
-  // Manejador de clic en el anuncio invisible
-  const handleAdClick = () => {
-    if (adVisible) {
-      setAdClickCount(prev => prev + 1);
+  // Manejador de clic CORREGIDO para el anuncio invisible:
+  // - Evita la navegación actual
+  // - Abre el enlace en una pestaña nueva EN SEGUNDO PLANO (sin foco)
+  const handleAdClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!adVisible) return;
+
+    // Prevenir que el clic se propague y cause navegación en la página actual
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Intentar obtener la URL del anuncio (si es un enlace <a>)
+    const anchor = (e.target as HTMLElement).closest('a');
+    const url = anchor?.href;
+
+    // Contar el clic para el límite de 3
+    setAdClickCount(prev => prev + 1);
+
+    if (url) {
+      // Abrir en una nueva ventana/pestaña y quitarle el foco inmediatamente
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+      if (newWindow) {
+        newWindow.blur();        // Quita el foco de la nueva pestaña
+        window.focus();          // Devuelve el foco a nuestra web
+      }
     }
+    // Si no se pudo obtener URL (ej. iframe), el clic igual se cuenta pero no navega
   };
 
   // ======================================================
@@ -783,7 +804,7 @@ export default function App() {
               </p>
             </div>
 
-            {/* ANUNCIO ADNOW INVISIBLE (solo móvil/tablet) */}
+            {/* ANUNCIO ADNOW INVISIBLE (solo móvil/tablet) - CORREGIDO */}
             {isMobileOrTablet && (
               <div
                 onClick={handleAdClick}
