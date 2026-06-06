@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SelectedSlot, TeamDraft, HistoricalTeam, Player, Role, Region, GameMode } from './types';
 import { LEAGUE_TEAMS } from './data/lolTeams';
 import PlayerCard from './components/PlayerCard';
@@ -49,6 +49,14 @@ export default function App() {
   const [totalDeaths, setTotalDeaths] = useState(0);
   const [mobileDraftTab, setMobileDraftTab] = useState<'spin' | 'squad'>('spin');
   const [showSynergyGuide, setShowSynergyGuide] = useState(false);
+
+  // ---------- ADNOW ESTADOS ----------
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [adVisible, setAdVisible] = useState(false);
+  const [adClickCount, setAdClickCount] = useState(0);
+  const [adCycle, setAdCycle] = useState(0);
+  const adScriptsInjected = useRef(false);
+  // -----------------------------------
 
   const activeTrans = TRANSLATIONS[language] || TRANSLATIONS['es'];
 
@@ -626,6 +634,85 @@ export default function App() {
     }
   };
 
+  // ======================================================
+  // LÓGICA DEL ANUNCIO INVISIBLE ADNOW (solo móvil/tablet)
+  // ======================================================
+
+  // Detectar si es móvil/tablet (≤1024px)
+  useEffect(() => {
+    const checkDevice = () => setIsMobileOrTablet(window.innerWidth <= 1024);
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  // Inyectar scripts de AdNow solo una vez
+  useEffect(() => {
+    if (!isMobileOrTablet || adScriptsInjected.current) return;
+
+    const configScript = document.createElement('script');
+    configScript.type = 'text/javascript';
+    configScript.innerHTML = `
+      (sc_adv_out = window.sc_adv_out || []).push({
+          id: 888818,
+          domain: "n.nnowa.com",
+      });
+    `;
+    document.body.appendChild(configScript);
+
+    const adScript = document.createElement('script');
+    adScript.type = 'text/javascript';
+    adScript.src = '//st-n.nnowa.com/js/a.js';
+    adScript.async = true;
+    document.body.appendChild(adScript);
+
+    adScriptsInjected.current = true;
+  }, [isMobileOrTablet]);
+
+  // Mostrar el anuncio de forma aleatoria
+  useEffect(() => {
+    if (!isMobileOrTablet) {
+      setAdVisible(false);
+      return;
+    }
+
+    if (adVisible) return; // ya está visible
+
+    // 50% de probabilidad de aparecer tras 5-15 segundos
+    if (Math.random() < 0.5) {
+      const delay = Math.floor(Math.random() * 10000) + 5000;
+      const timer = setTimeout(() => {
+        setAdVisible(true);
+        setAdClickCount(0);
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+    // si no toca, no hacemos nada; se reactivará con adCycle
+  }, [isMobileOrTablet, adVisible, adCycle]);
+
+  // Dormir el anuncio tras 3 clics y reactivar tras 30-60s
+  useEffect(() => {
+    if (adClickCount >= 3) {
+      setAdVisible(false);
+      setAdClickCount(0);
+
+      const cooldown = Math.floor(Math.random() * 30000) + 30000; // 30-60 segundos
+      const timer = setTimeout(() => {
+        setAdCycle(prev => prev + 1); // fuerza reevaluación del efecto anterior
+      }, cooldown);
+      return () => clearTimeout(timer);
+    }
+  }, [adClickCount]);
+
+  // Manejador de clic en el anuncio invisible
+  const handleAdClick = () => {
+    if (adVisible) {
+      setAdClickCount(prev => prev + 1);
+    }
+  };
+
+  // ======================================================
+
   return (
     <div id="main-viewport" className="min-h-screen bg-[#010a13] font-sans selection:bg-[#c8aa6e] selection:text-[#010a13] text-[#f0e6d2] pb-16">
       <ExoFullpageReplayTags />
@@ -695,6 +782,26 @@ export default function App() {
                 {activeTrans.selectLangAndMode}
               </p>
             </div>
+
+            {/* ANUNCIO ADNOW INVISIBLE (solo móvil/tablet) */}
+            {isMobileOrTablet && (
+              <div
+                onClick={handleAdClick}
+                style={{
+                  position: 'fixed',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 9999,
+                  opacity: 0,                             // totalmente invisible
+                  pointerEvents: adVisible ? 'auto' : 'none',
+                  width: '300px',
+                  height: '250px',
+                }}
+              >
+                <div id="SC_TBlock_888818"></div>
+              </div>
+            )}
 
             {/* BENTO CARD SETUP ENGINE */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch text-left max-w-3xl mx-auto">
