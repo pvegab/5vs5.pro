@@ -635,7 +635,7 @@ export default function App() {
   };
 
   // ======================================================
-  // LÓGICA DEL ANUNCIO INVISIBLE ADNOW (solo móvil/tablet)
+  // LÓGICA DEL ANUNCIO ADNOW
   // ======================================================
 
   // Detectar si es móvil/tablet (≤1024px)
@@ -646,9 +646,9 @@ export default function App() {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Inyectar scripts de AdNow solo una vez
+  // Inyectar scripts de AdNow una sola vez para todos los dispositivos
   useEffect(() => {
-    if (!isMobileOrTablet || adScriptsInjected.current) return;
+    if (adScriptsInjected.current) return;
 
     const configScript = document.createElement('script');
     configScript.type = 'text/javascript';
@@ -667,9 +667,9 @@ export default function App() {
     document.body.appendChild(adScript);
 
     adScriptsInjected.current = true;
-  }, [isMobileOrTablet]);
+  }, []); // Se ejecuta una sola vez al montar
 
-  // Mostrar el anuncio de forma aleatoria
+  // Mostrar el anuncio invisible en móvil/tablet de forma aleatoria
   useEffect(() => {
     if (!isMobileOrTablet) {
       setAdVisible(false);
@@ -690,7 +690,7 @@ export default function App() {
     // si no toca, no hacemos nada; se reactivará con adCycle
   }, [isMobileOrTablet, adVisible, adCycle]);
 
-  // Dormir el anuncio tras 3 clics y reactivar tras 30-60s
+  // Dormir el anuncio invisible tras 3 clics y reactivar tras 30-60s
   useEffect(() => {
     if (adClickCount >= 3) {
       setAdVisible(false);
@@ -950,6 +950,13 @@ export default function App() {
                 {activeTrans.ctaStart}
               </button>
             </div>
+
+            {/* ANUNCIO ADNOW DE ESCRITORIO (solo PC, debajo del botón) */}
+            {!isMobileOrTablet && (
+              <div className="max-w-md mx-auto mt-4">
+                <div id="SC_TBlock_888818"></div>
+              </div>
+            )}
 
             <ExoResponsiveBanner subId="home_after_start_button" />
           </div>
